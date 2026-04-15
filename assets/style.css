@@ -228,18 +228,26 @@ a:hover { color: var(--primary); }
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.hero-visual-media img {
-  width: 100%;
-  aspect-ratio: 4/5;
-  object-fit: cover;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
+.hero-visual-media .visual-tile {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 4/5;
+  overflow: hidden;
   transition: transform 0.3s;
 }
-.hero-visual-media img:hover { transform: scale(1.02); }
-.hero-visual-media img:nth-child(2) { transform: translateY(20px); }
-.hero-visual-media img:nth-child(2):hover { transform: translateY(20px) scale(1.02); }
+.hero-visual-media .visual-tile img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+}
+.hero-visual-media .visual-tile:hover { transform: scale(1.02); }
+.hero-visual-media .visual-tile:nth-child(2) { transform: translateY(20px); }
+.hero-visual-media .visual-tile:nth-child(2):hover { transform: translateY(20px) scale(1.02); }
 
 .hero-visual-card {
   background: rgba(255,255,255,0.08);
