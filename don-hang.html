@@ -6,8 +6,31 @@
 <title>Đơn của tôi — 30SHINE B2B Sale Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+<style>
+body { visibility: hidden; }
+body.auth-ok { visibility: visible; }
+.auth-loading {
+  position: fixed; inset: 0; z-index: 9999; visibility: visible;
+  background: linear-gradient(135deg, #15397F 0%, #0A1F4D 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; font-family: 'Manrope', sans-serif;
+}
+.auth-loading .spinner {
+  width: 48px; height: 48px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: #D4A017;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
+<div class="auth-loading" id="authLoading">
+  <div class="spinner"></div>
+  <div>Đang xác thực...</div>
+</div>
 <nav class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo-flame">
@@ -93,7 +116,12 @@ let currentFilter = 'all';
 
 async function init() {
   const me = await apiMe();
-  if (!me) { location.href = 'login.html'; return; }
+  if (!me) {
+    location.href = 'login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  document.getElementById('authLoading').remove();
+  document.body.classList.add('auth-ok');
   document.getElementById('user_box').style.display = '';
   document.getElementById('user_name').textContent = me.name + ' (' + me.role + ')';
 

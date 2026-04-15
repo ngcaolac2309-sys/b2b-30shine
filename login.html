@@ -73,8 +73,13 @@ if (err === 'nowl') {
 }
 document.getElementById('btn_login').href = apiLoginUrl();
 
-// Nếu đã login rồi, redirect
-apiMe().then(u => { if (u) location.href = 'sale.html'; });
+// Nếu đã login rồi, redirect về next (nếu có) hoặc sale
+apiMe().then(u => {
+  if (u) {
+    const next = params.get('next');
+    location.href = next || 'sale.html';
+  }
+});
 </script>
 </body>
 </html>
