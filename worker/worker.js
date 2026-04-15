@@ -47,8 +47,24 @@ async function hmacSha256(key, data) {
   return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
+// UTF-8 safe base64
+function b64encodeUtf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+function b64decodeUtf8(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
 async function signSession(payload, secret) {
-  const body = btoa(JSON.stringify(payload)).replace(/=+$/, '');
+  const body = b64encodeUtf8(JSON.stringify(payload));
   const sig = await hmacSha256(secret, body);
   return `${body}.${sig}`;
 }
@@ -59,7 +75,7 @@ async function verifySession(token, secret) {
   const expected = await hmacSha256(secret, body);
   if (expected !== sig) return null;
   try {
-    const payload = JSON.parse(atob(body));
+    const payload = JSON.parse(b64decodeUtf8(body));
     if (payload.exp && payload.exp < Date.now()) return null;
     return payload;
   } catch { return null; }
