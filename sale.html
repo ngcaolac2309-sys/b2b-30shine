@@ -560,67 +560,385 @@ document.getElementById('btn_finalize').addEventListener('click', () => {
 function openQuotePreview(s, p) {
   const w = window.open('', '_blank');
   const now = new Date().toLocaleDateString('vi-VN');
-  const linesHtml = p.lines.map(l => `
+  const quoteId = 'BG' + Date.now().toString(36).toUpperCase().slice(-8);
+  const LOGO_URL = 'https://ngcaolac2309-sys.github.io/b2b-30shine/assets/brand/mau_xanh.png';
+  const LOGO_WHITE = 'https://ngcaolac2309-sys.github.io/b2b-30shine/assets/brand/mau_trang.png';
+
+  const linesHtml = p.lines.map((l, i) => `
     <tr>
-      <td>${l.sku}</td>
+      <td class="idx">${i+1}</td>
+      <td><code>${l.sku}</code></td>
       <td>${l.ten}</td>
       <td class="num">${fmtNum(l.gia_ny)}</td>
       <td class="num">${fmtNum(l.gia_sau_ck)}</td>
       <td class="num">${l.sl}</td>
-      <td class="num"><b>${fmtNum(l.thanh_tien)}</b></td>
+      <td class="num strong">${fmtNum(l.thanh_tien)}</td>
     </tr>`).join('');
-  const giftHtml = (s.qua_user || []).map(q => {
+  const giftHtml = (s.qua_user || []).map((q, i) => {
     const sku = skuById(q.sku);
-    return `<tr><td>${sku.sku}</td><td>${sku.ten}</td><td class="num">${q.sl}</td></tr>`;
+    return `<tr><td class="idx">${i+1}</td><td><code>${sku.sku}</code></td><td>${sku.ten}</td><td class="num">${q.sl}</td></tr>`;
   }).join('');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Báo giá — ${s.kh_ten || 'KH'}</title>
-<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+
+  w.document.write(`<!DOCTYPE html><html lang="vi"><head>
+<meta charset="UTF-8">
+<title>Báo giá ${quoteId} — ${s.kh_ten || 'KH'}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{font-family:'Inter',sans-serif;padding:40px;color:#0F1B3D;max-width:800px;margin:0 auto;}
-h1{color:#1E3A8A;font-size:28px;margin-bottom:4px;}
-.hdr{border-bottom:3px solid #1E3A8A;padding-bottom:16px;margin-bottom:24px;}
-.hdr .star{color:#F5C518;}
-.meta{display:flex;justify-content:space-between;margin-bottom:20px;font-size:13px;}
-.meta b{color:#1E3A8A;}
-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;}
-th{background:#1E3A8A;color:#fff;padding:10px;text-align:left;font-size:12px;}
-th.num,td.num{text-align:right;}
-td{padding:8px 10px;border-bottom:1px solid #E4E7EE;}
-.total-box{background:#F5F6FA;padding:16px;border-radius:8px;margin:20px 0;}
-.total-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
-.total-row.final{font-size:18px;font-weight:700;color:#1E3A8A;border-top:2px solid #1E3A8A;margin-top:10px;padding-top:10px;}
-.gift-box{background:#FFFBEB;padding:16px;border-radius:8px;border-left:4px solid #F5C518;margin-top:20px;}
-.footer-note{margin-top:30px;font-size:12px;color:#8B93A7;border-top:1px solid #E4E7EE;padding-top:16px;}
-@media print{@page{margin:10mm;}}
+  :root {
+    --primary: #15397F;
+    --primary-dark: #0A1F4D;
+    --accent: #225CCC;
+    --gold: linear-gradient(135deg, #B8860B 0%, #FFD700 40%, #E6B800 70%, #B8860B 100%);
+    --gold-solid: #D4A017;
+    --bg-soft: #F1F6FF;
+    --border: #E4E7EE;
+    --text: #0A1F4D;
+    --text-soft: #4A5573;
+    --text-muted: #8B93A7;
+    --danger: #DC2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Manrope', -apple-system, sans-serif;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    background: #F5F7FB;
+    padding: 32px 24px;
+  }
+  .paper {
+    max-width: 820px; margin: 0 auto;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(15,27,61,0.08);
+    overflow: hidden;
+  }
+
+  /* Header */
+  .doc-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: #fff; padding: 32px 40px 40px;
+    position: relative; overflow: hidden;
+  }
+  .doc-header::before {
+    content:''; position:absolute; top:-40%; right:-10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,197,24,0.22) 0%, transparent 65%);
+  }
+  .doc-header::after {
+    content:''; position:absolute; bottom:-60%; left:-10%;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(160,201,236,0.25) 0%, transparent 70%);
+  }
+  .doc-header-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    position: relative; z-index: 1;
+  }
+  .doc-logo img { height: 40px; display: block; }
+  .doc-title-box {
+    text-align: right;
+  }
+  .doc-title {
+    font-family: 'Hubot Sans', sans-serif;
+    font-weight: 900; font-size: 26px;
+    letter-spacing: 1.5px;
+    background: var(--gold); -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    line-height: 1.1;
+  }
+  .doc-sub {
+    font-size: 11px; color: rgba(255,255,255,0.8);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px;
+  }
+  .doc-meta {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; margin-top: 28px;
+    position: relative; z-index: 1;
+  }
+  .meta-block {
+    background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .meta-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.7); font-weight: 700; margin-bottom: 6px;
+  }
+  .meta-value { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.4; }
+  .meta-value .small { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
+
+  /* Body */
+  .doc-body { padding: 36px 40px 28px; }
+
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .section-head .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--primary); color: #fff;
+    border-radius: 6px; font-weight: 900; font-family: 'Hubot Sans', sans-serif;
+    font-size: 13px;
+  }
+  .section-head h2 {
+    font-family: 'Hubot Sans', sans-serif;
+    font-size: 15px; color: var(--primary-dark);
+    font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .section-head .tag {
+    margin-left: auto;
+    background: var(--bg-soft); color: var(--primary);
+    padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  th {
+    background: var(--primary); color: #fff;
+    padding: 11px 12px; text-align: left;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td {
+    padding: 11px 12px; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  tbody tr:nth-child(even) { background: #FAFBFD; }
+  td.idx { color: var(--text-muted); font-size: 12px; width: 36px; }
+  td code {
+    background: var(--bg-soft); padding: 2px 8px;
+    border-radius: 4px; font-size: 11px; font-family: 'SF Mono', Consolas, monospace;
+    color: var(--primary);
+  }
+  .strong { font-weight: 800; color: var(--primary-dark); }
+
+  /* Total */
+  .total-box {
+    background: var(--bg-soft);
+    border-radius: 10px;
+    padding: 6px 22px;
+    margin: 24px 0;
+  }
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px dashed #CFD8E5;
+    font-size: 13px;
+  }
+  .total-row:last-child { border-bottom: none; }
+  .total-row .lbl { color: var(--text-soft); font-weight: 500; }
+  .total-row .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .total-row.minus .val { color: var(--danger); }
+  .total-row.final {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff; padding: 18px 22px; margin: 6px -22px -6px;
+    border-radius: 10px; border: none;
+    box-shadow: 0 6px 20px rgba(21,57,127,0.25);
+  }
+  .total-row.final .lbl {
+    color: rgba(255,255,255,0.9); font-family: 'Hubot Sans', sans-serif;
+    font-weight: 800; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .total-row.final .val {
+    color: #fff; font-family: 'Hubot Sans', sans-serif;
+    font-weight: 900; font-size: 22px;
+  }
+
+  /* Gift */
+  .gift-box {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-left: 4px solid var(--gold-solid);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-top: 24px;
+  }
+  .gift-title {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .gift-title h3 {
+    font-family: 'Hubot Sans', sans-serif;
+    font-size: 14px; color: #92400E; font-weight: 800;
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .gift-title .tier {
+    margin-left: auto;
+    background: var(--gold); color: #fff;
+    padding: 4px 14px; border-radius: 100px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(212,160,23,0.3);
+  }
+  .gift-box table { margin-bottom: 0; background: #fff; border-radius: 8px; overflow: hidden; }
+  .gift-box th { background: #92400E; font-size: 10px; }
+
+  /* Sign block */
+  .sign-block {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; margin-top: 48px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .sign-col {
+    text-align: center;
+  }
+  .sign-col .role {
+    font-family: 'Hubot Sans', sans-serif;
+    font-weight: 800; font-size: 12px; color: var(--primary-dark);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .sign-col .note {
+    font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 60px;
+  }
+  .sign-line {
+    border-top: 1px solid var(--text-soft);
+    font-size: 11px; color: var(--text-muted); padding-top: 6px;
+  }
+
+  /* Terms */
+  .terms {
+    background: #F8FAFC;
+    padding: 16px 20px; border-radius: 8px;
+    margin-top: 28px; border-left: 3px solid var(--primary);
+  }
+  .terms .t-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--primary); font-weight: 800; margin-bottom: 8px;
+  }
+  .terms ul {
+    list-style: none; font-size: 11px; color: var(--text-soft); line-height: 1.8;
+  }
+  .terms ul li { padding-left: 18px; position: relative; }
+  .terms ul li::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 800; }
+
+  /* Footer */
+  .doc-footer {
+    background: var(--primary-dark);
+    color: rgba(255,255,255,0.7);
+    padding: 20px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px;
+  }
+  .doc-footer img { height: 28px; }
+  .doc-footer .id { font-variant-numeric: tabular-nums; color: rgba(255,255,255,0.5); }
+
+  /* Print button floating */
+  .print-btn {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--gold); background-size: 200% 200%;
+    color: #fff; border: none; padding: 12px 22px;
+    border-radius: 100px; font-weight: 800; cursor: pointer;
+    font-family: 'Manrope', sans-serif; font-size: 14px;
+    box-shadow: 0 8px 24px rgba(212,160,23,0.4);
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+    z-index: 100;
+  }
+  .print-btn:hover { background-position: 100% 100%; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(212,160,23,0.5); }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .paper { box-shadow: none; border-radius: 0; max-width: 100%; }
+    .print-btn { display: none; }
+    @page { margin: 10mm; size: A4; }
+  }
 </style></head><body>
-<div class="hdr">
-  <h1>30<span class="star">★</span>SHINE B2B — BÁO GIÁ</h1>
-  <div style="color:#555;font-size:13px;">Khối Thương mại · Chính sách T4/2026</div>
+<div class="paper">
+
+  <div class="doc-header">
+    <div class="doc-header-top">
+      <div class="doc-logo"><img src="${LOGO_WHITE}" alt="30Shine" /></div>
+      <div class="doc-title-box">
+        <div class="doc-title">BÁO GIÁ B2B</div>
+        <div class="doc-sub">Khối Thương mại · ${quoteId}</div>
+      </div>
+    </div>
+    <div class="doc-meta">
+      <div class="meta-block">
+        <div class="meta-label">Khách hàng</div>
+        <div class="meta-value">${s.kh_ten || '—'}<div class="small">${s.kh_sdt ? 'SĐT: ' + s.kh_sdt : '&nbsp;'}</div></div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Chương trình · Ngày báo</div>
+        <div class="meta-value">${p.ct_name || '—'}<div class="small">Ngày: ${now} · Sale: ${s.sale_name || '—'}</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <div class="section-head">
+      <span class="num">1</span>
+      <h2>Phần khách trả tiền</h2>
+      <span class="tag">CK B2B ${fmtPct(p.ck_kh)}</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th class="idx">#</th><th>Mã SKU</th><th>Tên sản phẩm</th>
+        <th class="num">Giá NY</th><th class="num">Giá sau CK</th>
+        <th class="num">SL</th><th class="num">Thành tiền</th>
+      </tr></thead>
+      <tbody>${linesHtml}</tbody>
+    </table>
+
+    <div class="total-box">
+      <div class="total-row"><span class="lbl">Tổng giá niêm yết</span><span class="val">${fmtMoney(p.dt_ny)}</span></div>
+      <div class="total-row minus"><span class="lbl">Chiết khấu B2B (${fmtPct(p.ck_kh)})</span><span class="val">− ${fmtMoney(p.ck_kh_amount)}</span></div>
+      <div class="total-row final"><span class="lbl">Khách thanh toán</span><span class="val">${fmtMoney(p.dt_thuc)}</span></div>
+    </div>
+
+    ${giftHtml ? `
+    <div class="section-head" style="margin-top:28px;">
+      <span class="num">2</span>
+      <h2>Quà tặng kèm</h2>
+      <span class="tag" style="background:#FEF3C7; color:#92400E;">${p.tier ? p.tier.ten : 'Bậc quà'}</span>
+    </div>
+    <div class="gift-box">
+      <div class="gift-title">
+        <h3>🎁 ${p.tier ? p.tier.qua_text : 'Quà tặng'}</h3>
+      </div>
+      <table>
+        <thead><tr><th class="idx">#</th><th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Số lượng</th></tr></thead>
+        <tbody>${giftHtml}</tbody>
+      </table>
+    </div>` : ''}
+
+    <div class="terms">
+      <div class="t-title">Điều kiện áp dụng</div>
+      <ul>
+        <li>Áp dụng 01–30/04/2026 · Chốt đơn trước 25/04 · Thanh toán 100% khi nhận hàng</li>
+        <li>Hàng tặng tách phiếu xuất riêng, ghi <b>"HÀNG TẶNG 0đ"</b></li>
+        <li>Bảng giá và quà tặng theo chính sách chính thức của 30Shine Tháng 4.2026</li>
+      </ul>
+    </div>
+
+    <div class="sign-block">
+      <div class="sign-col">
+        <div class="role">Đại diện 30Shine</div>
+        <div class="note">(Ký, ghi rõ họ tên)</div>
+        <div class="sign-line">${s.sale_name || '—'}</div>
+      </div>
+      <div class="sign-col">
+        <div class="role">Đại diện khách hàng</div>
+        <div class="note">(Ký, ghi rõ họ tên)</div>
+        <div class="sign-line">${s.kh_ten || '—'}</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="doc-footer">
+    <img src="${LOGO_WHITE}" alt="30Shine" />
+    <div>
+      <div style="color:#fff; font-weight:600;">30Shine Corporation</div>
+      <div>Khối Thương mại · B2B Portal · © 2026</div>
+    </div>
+    <div class="id">${quoteId}</div>
+  </div>
+
 </div>
-<div class="meta">
-  <div>Khách hàng: <b>${s.kh_ten || '—'}</b><br>SĐT: ${s.kh_sdt || '—'}<br>Nhóm: <b>${s.nhom}</b></div>
-  <div style="text-align:right;">Chương trình: <b>${p.ct_name}</b><br>Ngày báo: <b>${now}</b><br>Sale: ${s.sale_name || '—'}</div>
-</div>
-<h3 style="color:#1E3A8A;margin-bottom:10px;">PHẦN KHÁCH TRẢ TIỀN (CK ${fmtPct(p.ck_kh)})</h3>
-<table>
-  <thead><tr><th>SKU</th><th>Tên SP</th><th class="num">Giá NY</th><th class="num">Giá sau CK</th><th class="num">SL</th><th class="num">Thành tiền</th></tr></thead>
-  <tbody>${linesHtml}</tbody>
-</table>
-<div class="total-box">
-  <div class="total-row"><span>Tổng giá niêm yết</span><b>${fmtMoney(p.dt_ny)}</b></div>
-  <div class="total-row"><span>Chiết khấu B2B (${fmtPct(p.ck_kh)})</span><b style="color:#DC2626;">−${fmtMoney(p.ck_kh_amount)}</b></div>
-  <div class="total-row final"><span>KHÁCH THANH TOÁN</span><b>${fmtMoney(p.dt_thuc)}</b></div>
-</div>
-${giftHtml ? `<div class="gift-box">
-  <h3 style="color:#92400E;margin-bottom:10px;">🎁 QUÀ TẶNG KÈM (${p.tier ? p.tier.ten : '—'})</h3>
-  <table><thead><tr><th>SKU</th><th>Tên</th><th class="num">SL</th></tr></thead><tbody>${giftHtml}</tbody></table>
-</div>` : ''}
-<div class="footer-note">
-  ✓ Áp dụng 01-30/04/2026 · Chốt đơn trước 25/04 · Thanh toán 100% khi nhận hàng<br>
-  ✓ Hàng tặng tách phiếu xuất riêng, ghi "HÀNG TẶNG 0đ"<br>
-  ✓ Bảng giá và quà tặng theo chính sách chính thức của 30Shine T4/2026
-</div>
-<div style="margin-top:20px;text-align:right;"><button onclick="window.print()" style="background:#F5C518;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;">🖨️ In / Lưu PDF</button></div>
+
+<button class="print-btn" onclick="window.print()">🖨️ In / Lưu PDF</button>
+
 </body></html>`);
   w.document.close();
 }
