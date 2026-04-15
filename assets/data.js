@@ -25,12 +25,12 @@ const MASTER_PRICE = [
 
 // CK cố định theo nhóm KH × nhãn
 const CK_GROUPS = {
-  N1: { ten: 'VIP NPP/Chuỗi lớn',     mota: '>300tr/năm',   Glanzen: 0.60, Laborie: 0.35, 'Dr.FS': 0.45 },
-  N2: { ten: 'Chuỗi/Sàn TMĐT',        mota: 'Kingkong, Socialla...', Glanzen: 0.50, Laborie: 0.33, 'Dr.FS': 0.40 },
-  N3: { ten: 'Sỉ vừa',                 mota: 'Vua Tóc Giả, Mai Lotus...', Glanzen: 0.45, Laborie: 0.30, 'Dr.FS': 0.35 },
-  N4: { ten: 'Salon/Barber lớn',       mota: 'Thanks Baber, Classic...', Glanzen: 0.35, Laborie: 0.25, 'Dr.FS': 0.30 },
-  N5: { ten: 'Salon/KH lẻ nhỏ',        mota: '25+ KH còn lại', Glanzen: 0.25, Laborie: 0.20, 'Dr.FS': 0.20 },
-  NQ: { ten: 'Nhượng Quyền 30Shine',   mota: 'Chỉ áp CT3',    Glanzen: 0,    Laborie: 0.50, 'Dr.FS': 0   },
+  N1: { ten: 'VIP Đối tác chiến lược', mota: 'Nhà phân phối & chuỗi lớn toàn quốc',          Glanzen: 0.60, Laborie: 0.35, 'Dr.FS': 0.45 },
+  N2: { ten: 'Chuỗi & Sàn TMĐT',       mota: 'Chuỗi salon đa chi nhánh và sàn thương mại điện tử', Glanzen: 0.50, Laborie: 0.33, 'Dr.FS': 0.40 },
+  N3: { ten: 'Đại lý sỉ',              mota: 'Đại lý phân phối khu vực',                     Glanzen: 0.45, Laborie: 0.30, 'Dr.FS': 0.35 },
+  N4: { ten: 'Salon/Barber lớn',       mota: 'Salon, Barber shop quy mô lớn',                Glanzen: 0.35, Laborie: 0.25, 'Dr.FS': 0.30 },
+  N5: { ten: 'Salon/Barber tiêu chuẩn',mota: 'Salon và cửa hàng tiêu chuẩn',                 Glanzen: 0.25, Laborie: 0.20, 'Dr.FS': 0.20 },
+  NQ: { ten: 'Nhượng Quyền 30Shine',   mota: 'Salon trong hệ thống NQ 30Shine',              Glanzen: 0,    Laborie: 0.50, 'Dr.FS': 0   },
 };
 
 // Chương trình KM

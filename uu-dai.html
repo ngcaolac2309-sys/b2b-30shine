@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ưu đãi & Bảng giá B2B T4/2026 — 30SHINE</title>
+<meta name="theme-color" content="#15397F">
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* Hero-ribbon for this page */
+.page-hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  padding: 72px 24px 96px;
+  position: relative; overflow: hidden;
+}
+.page-hero::before {
+  content:''; position:absolute; top:-20%; right:-10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(212,160,23,0.18) 0%, transparent 65%);
+}
+.page-hero::after {
+  content:''; position:absolute; bottom:-40%; left:-5%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(160,201,236,0.22) 0%, transparent 70%);
+}
+.page-hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; text-align: center; }
+.page-hero h1 {
+  font-family: var(--font-head); font-size: 48px; font-weight: 900;
+  line-height: 1.1; margin: 18px 0 16px; letter-spacing: -0.02em;
+}
+.page-hero h1 .gold {
+  background: var(--gold); -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-style: italic;
+}
+.page-hero p.lead { font-size: 18px; color: rgba(255,255,255,0.88); max-width: 720px; margin: 0 auto 28px; }
+.hero-chips { display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.hero-chip {
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 10px 18px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; color: #fff;
+}
+.hero-chip b { color: var(--sub-branding); }
+
+/* Timeline / conditions */
+.timeline {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  margin: 40px 0;
+}
+@media (max-width: 900px) { .timeline { grid-template-columns: repeat(2, 1fr); } }
+.tl-item {
+  background: #fff; padding: 22px; border-radius: var(--radius);
+  border-top: 3px solid var(--primary); box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.tl-item .num {
+  font-family: var(--font-head); font-weight: 900; font-size: 36px;
+  background: var(--gold); -webkit-background-clip: text; background-clip: text;
+  color: transparent; line-height: 1;
+}
+.tl-item .lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+.tl-item .title { font-weight: 800; color: var(--primary-dark); margin-top: 10px; font-size: 15px; }
+
+/* CT hero */
+.ct-block { padding: 72px 0; border-bottom: 1px solid var(--border-light); }
+.ct-block:last-child { border-bottom: none; }
+.ct-banner {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  color: #fff; border-radius: var(--radius-lg);
+  padding: 48px 40px; position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center;
+  margin-bottom: 36px;
+}
+@media (max-width: 900px) { .ct-banner { grid-template-columns: 1fr; padding: 36px 28px; } }
+.ct-banner::before {
+  content:''; position:absolute; top:-30%; right:-10%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(245,197,24,0.2) 0%, transparent 65%);
+}
+.ct-banner::after {
+  content:''; position:absolute; bottom:-50%; left:-10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(160,201,236,0.18) 0%, transparent 70%);
+}
+.ct-banner-text { position: relative; z-index: 1; }
+.ct-banner-num {
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  color: var(--accent-dark); letter-spacing: 2px; opacity: 0.9;
+}
+.ct-banner h2 {
+  font-family: var(--font-head); font-size: 42px; font-weight: 900;
+  line-height: 1.1; margin: 6px 0 12px;
+}
+.ct-banner h2 .gold {
+  background: var(--gold); -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-style: italic;
+}
+.ct-banner .tagline {
+  color: rgba(255,255,255,0.9); font-size: 17px; margin-bottom: 20px;
+  max-width: 520px;
+}
+.ct-banner-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.ct-banner-visual { position: relative; z-index: 1; }
+.ct-banner-visual img {
+  width: 100%; border-radius: var(--radius);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  aspect-ratio: 4/5; object-fit: cover;
+}
+
+/* Tier cards */
+.tier-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.tier-card-v2 {
+  background: #fff; border: 2px solid var(--border-light);
+  border-radius: var(--radius); padding: 26px 22px;
+  transition: all 0.25s; position: relative;
+}
+.tier-card-v2:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: var(--shadow); }
+.tier-card-v2.vip {
+  border-color: var(--gold-solid); background: linear-gradient(180deg, #fff 0%, #FFF9E6 100%);
+}
+.tier-card-v2.vip::before {
+  content: '⭐ VIP'; position: absolute; top: -10px; right: 14px;
+  background: var(--gold); color: #fff; padding: 4px 14px;
+  border-radius: 100px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+  box-shadow: var(--shadow-gold);
+}
+.tier-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.tier-head .badge-num {
+  background: var(--primary); color: #fff; font-family: var(--font-head);
+  font-weight: 900; font-size: 16px; padding: 6px 12px; border-radius: 8px;
+}
+.tier-card-v2.vip .tier-head .badge-num { background: var(--gold); }
+.tier-head .badge-label { font-weight: 700; color: var(--primary-dark); font-size: 14px; }
+.tier-threshold-v2 {
+  font-family: var(--font-head); font-weight: 900; font-size: 28px;
+  color: var(--primary-dark); line-height: 1;
+}
+.tier-unit { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+.tier-gift-label {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px dashed var(--border);
+  color: var(--text-muted); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+}
+.tier-gift-desc { color: var(--text); font-size: 14px; margin-top: 6px; line-height: 1.55; }
+.tier-gift-desc b { color: var(--primary); }
+
+/* Price table (simpler — NY giá only, no internal KH names) */
+.price-section {
+  background: #fff; padding: 56px 24px;
+}
+.price-table { font-size: 14px; }
+.price-table tbody tr td:first-child { width: 110px; }
+
+/* Group CK table */
+.group-table th { font-size: 11px; }
+.group-table td { padding: 12px 16px; }
+
+/* Legal / conditions */
+.terms-card {
+  background: linear-gradient(135deg, #F1F6FF 0%, #E4EEFE 100%);
+  border-left: 4px solid var(--primary);
+  padding: 28px 32px; border-radius: var(--radius);
+}
+.terms-card h3 { color: var(--primary-dark); margin-bottom: 12px; font-size: 18px; }
+.terms-card ul { padding-left: 20px; color: var(--text); line-height: 2; }
+.terms-card ul b { color: var(--primary); }
+
+/* CTA at bottom */
+.contact-cta {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff; padding: 64px 24px; text-align: center;
+}
+.contact-cta h2 {
+  font-family: var(--font-head); font-size: 36px; font-weight: 900;
+  color: #fff; margin-bottom: 14px;
+}
+.contact-cta h2 .gold {
+  background: var(--gold); -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand-logo">
+      <img src="assets/brand/mau_xanh.png" alt="30Shine" />
+      <span class="brand-label">B2B Portal</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Trang chủ</a>
+      <a href="uu-dai.html" class="active">Ưu đãi & Bảng giá</a>
+      <a href="login.html" class="nav-btn">Sale Portal →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <span class="hero-tag"><span class="dot"></span>Chương trình Tháng 4 · 2026</span>
+    <h1>3 chương trình <span class="gold">ưu đãi đặc biệt</span><br>dành cho đối tác B2B</h1>
+    <p class="lead">
+      Giá B2B ưu đãi đến <b>60%</b> kèm quà tặng theo bậc đơn hàng.
+      Áp dụng cho cả khối B2B & Nhượng Quyền 30Shine.
+    </p>
+    <div class="hero-chips">
+      <span class="hero-chip">📅 Áp dụng <b>01–30/04/2026</b></span>
+      <span class="hero-chip">⏰ Chốt đơn trước <b>25/04</b></span>
+      <span class="hero-chip">💎 <b>3 nhãn hàng</b> chính hãng</span>
+      <span class="hero-chip">🎁 Quà tặng theo <b>bậc đơn</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- Overview timeline -->
+<section style="background:var(--bg-soft); padding:48px 24px;">
+  <div class="container">
+    <div class="timeline">
+      <div class="tl-item"><div class="num">3</div><div class="lbl">Chương trình</div><div class="title">CT1 · CT2 · CT3</div></div>
+      <div class="tl-item"><div class="num">3</div><div class="lbl">Nhãn hàng</div><div class="title">Glanzen · Laborie · Dr.FS</div></div>
+      <div class="tl-item"><div class="num">18</div><div class="lbl">Sản phẩm áp dụng</div><div class="title">SKU chính thức</div></div>
+      <div class="tl-item"><div class="num">60%</div><div class="lbl">Ưu đãi tối đa</div><div class="title">Cho đối tác VIP</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CT1 -->
+<section class="ct-block section-white" id="ct1">
+  <div class="container">
+    <div class="ct-banner">
+      <div class="ct-banner-text">
+        <div class="ct-banner-num">Chương trình 01</div>
+        <h2>GLANZEN <span class="gold">×</span> GLANZEN</h2>
+        <p class="tagline">Mua Glanzen — Tặng Glanzen. Dành cho đại lý sỉ và salon tiêu chuẩn, giúp tối ưu chi phí nhập hàng và gia tăng tồn kho tạo kiểu.</p>
+        <div class="ct-banner-chips">
+          <span class="hero-chip">👥 Đại lý sỉ & Salon</span>
+          <span class="hero-chip">💰 Giảm giá đến <b>45%</b></span>
+          <span class="hero-chip">📦 5 SKU Glanzen</span>
+        </div>
+      </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/posm/tiles/02_hairstyle.jpg" alt="Glanzen Styling">
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Quà tặng theo bậc đơn</h3>
+    <div class="tier-grid" id="ct1-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 Sản phẩm áp dụng</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th>
+        </tr></thead><tbody id="ct1-skus"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CT2 -->
+<section class="ct-block" id="ct2" style="background:var(--bg-soft);">
+  <div class="container">
+    <div class="ct-banner">
+      <div class="ct-banner-text">
+        <div class="ct-banner-num">Chương trình 02</div>
+        <h2>GLANZEN <span class="gold">×</span> LABORIE</h2>
+        <p class="tagline">Mua Glanzen — Tặng Laborie Premium. Chương trình cao cấp dành riêng cho VIP đối tác và chuỗi lớn với quà Laborie 250ml tự chọn.</p>
+        <div class="ct-banner-chips">
+          <span class="hero-chip">👥 VIP Đối tác & Chuỗi</span>
+          <span class="hero-chip">💰 Giảm đến <b>60%</b></span>
+          <span class="hero-chip">🎁 Quà Laborie tự chọn</span>
+        </div>
+      </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/posm/tiles/08_trending.jpg" alt="Glanzen & Laborie Combo">
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Quà tặng theo bậc đơn</h3>
+    <div class="tier-grid" id="ct2-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 Sản phẩm Glanzen áp dụng</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th>
+        </tr></thead><tbody id="ct2-skus"></tbody></table>
+      </div>
+      <p class="text-muted mt-12" style="font-size:13px;">💡 Quà Laborie 250ml — 7 SKU tự chọn: Bond Shampoo, Detox Shampoo, Scalp Shampoo, Bond Conditioner, Lipid Bond Hair Oil, Molecular Mask, Molecular Serum.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CT3 -->
+<section class="ct-block section-white" id="ct3">
+  <div class="container">
+    <div class="ct-banner">
+      <div class="ct-banner-text">
+        <div class="ct-banner-num">Chương trình 03 · Xả kho</div>
+        <h2>LABORIE <span class="gold">DERMA</span></h2>
+        <p class="tagline">Giá cố định <b style="color:var(--accent);font-size:22px;">201.000đ/chai</b> (giảm 50% từ giá niêm yết 402.000đ). Tặng thêm theo số chai mua. Áp dụng cho toàn bộ khối B2B & Nhượng Quyền 30Shine.</p>
+        <div class="ct-banner-chips">
+          <span class="hero-chip">👥 Tất cả B2B + NQ 30Shine</span>
+          <span class="hero-chip">💰 CK <b>50%</b> cố định</span>
+          <span class="hero-chip">📦 Bậc theo số chai</span>
+        </div>
+      </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/posm/tiles/12_anh_trai.jpg" alt="Laborie Professional Hair Care">
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Bậc quà tặng theo số chai mua</h3>
+    <div class="tier-grid" id="ct3-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 7 SKU Laborie (tự chọn mix theo nhu cầu)</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th><th class="num">Giá CT3</th>
+        </tr></thead><tbody id="ct3-skus"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Điều kiện chung -->
+<section style="background:var(--bg-soft); padding:64px 24px;">
+  <div class="container">
+    <div class="section-head-tag" style="text-align:center;">QUY TẮC CHUNG</div>
+    <h2 class="section-title">Điều kiện <span class="gold">áp dụng</span></h2>
+    <div class="divider-gold"></div>
+
+    <div class="grid grid-2 mt-32">
+      <div class="terms-card">
+        <h3>📋 Điều kiện đơn hàng</h3>
+        <ul>
+          <li>Khách hàng chọn <b>1 trong 3 chương trình</b> cho mỗi đơn — không cộng dồn quà</li>
+          <li>Bậc quà xét theo <b>tổng tiền (hoặc số chai)</b> sau chiết khấu</li>
+          <li>Thanh toán <b>100% khi nhận hàng</b>, không áp dụng công nợ</li>
+          <li>Hàng tặng tách phiếu xuất kho riêng (ghi <b>"Hàng tặng 0đ"</b>)</li>
+        </ul>
+      </div>
+      <div class="terms-card">
+        <h3>⏰ Thời hạn & lưu ý</h3>
+        <ul>
+          <li>Áp dụng: <b>01 – 30/04/2026</b></li>
+          <li>Hạn chốt đơn: <b>25/04/2026</b> · Hạn giao hàng: <b>30/04/2026</b></li>
+          <li><b>CT3 Laborie 50%</b> chỉ áp riêng T4, không kéo dài sang tháng sau</li>
+          <li>Mức chiết khấu thực tế được xác nhận bởi Sale phụ trách theo nhóm KH</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA liên hệ -->
+<section class="contact-cta">
+  <div class="container-narrow">
+    <h2>Liên hệ Sale để nhận <span class="gold">báo giá chi tiết</span></h2>
+    <p style="color:rgba(255,255,255,0.85); font-size:17px; margin-bottom:28px;">
+      Mỗi đối tác có mức chiết khấu và ưu đãi riêng. Vui lòng liên hệ Sale phụ trách để được tư vấn chương trình phù hợp nhất.
+    </p>
+    <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+      <a href="index.html" class="btn btn-primary btn-lg">Về trang chủ</a>
+      <a href="#" class="btn btn-ghost btn-lg" onclick="alert('Liên hệ Sale phụ trách của bạn hoặc email: sale-b2b@30shine.com'); return false;">📞 Liên hệ Sale</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-brand"><a href="index.html" class="brand-logo-footer"><img src="assets/brand/mau_trang.png" alt="30Shine"/></a></div>
+  <div style="font-size:13px; font-weight:500;">Chính sách giá & Chương trình Ưu đãi — Tháng 4.2026</div>
+  <div class="footer-links">
+    <a href="index.html">Trang chủ</a>
+    <a href="uu-dai.html">Ưu đãi & Bảng giá</a>
+    <a href="#ct1">CT1</a>
+    <a href="#ct2">CT2</a>
+    <a href="#ct3">CT3</a>
+  </div>
+  <div class="footer-copy">© 2026 30Shine Corporation · Áp dụng cho đối tác B2B & Nhượng Quyền</div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script>
+function renderTiers(ct_id, container_id) {
+  const ct = PROGRAMS[ct_id];
+  const c = document.getElementById(container_id);
+  c.innerHTML = ct.tiers.map((t, i) => {
+    const isVip = t.ten === 'VIP' || (ct_id === 'CT3' && i === ct.tiers.length - 1);
+    const threshold = ct.tier_by === 'qty'
+      ? `<div class="tier-threshold-v2">${t.min_qty}</div><div class="tier-unit">chai mua</div>`
+      : `<div class="tier-threshold-v2">${fmtNum(t.min_dt_thuc / 1_000_000)}M+</div><div class="tier-unit">đơn hàng (sau CK)</div>`;
+    return `
+      <div class="tier-card-v2${isVip ? ' vip' : ''}">
+        <div class="tier-head">
+          <span class="badge-num">${i+1}</span>
+          <span class="badge-label">${t.ten}</span>
+        </div>
+        ${threshold}
+        <div class="tier-gift-label">🎁 Quà tặng</div>
+        <div class="tier-gift-desc">${t.qua_text}</div>
+      </div>`;
+  }).join('');
+}
+function renderSkusTable(ct_id, container_id, withCt3Price = false) {
+  const ct = PROGRAMS[ct_id];
+  const tbody = document.getElementById(container_id);
+  tbody.innerHTML = ct.skus.map(sku => {
+    const s = skuById(sku);
+    const ct3_price = withCt3Price ? `<td class="num font-mono"><b style="color:var(--primary);">${fmtMoney(201000)}</b></td>` : '';
+    return `<tr>
+      <td><code style="background:var(--bg-soft); padding:2px 8px; border-radius:4px; font-size:12px;">${s.sku}</code></td>
+      <td>${s.ten}</td>
+      <td class="num font-mono">${fmtMoney(s.ny)}</td>
+      ${ct3_price}
+    </tr>`;
+  }).join('');
+}
+renderTiers('CT1', 'ct1-tiers');
+renderTiers('CT2', 'ct2-tiers');
+renderTiers('CT3', 'ct3-tiers');
+renderSkusTable('CT1', 'ct1-skus');
+renderSkusTable('CT2', 'ct2-skus');
+renderSkusTable('CT3', 'ct3-skus', true);
+</script>
+</body>
+</html>
