@@ -52,7 +52,12 @@
       <a href="index.html">Trang chủ</a>
       <a href="bang-gia.html">Bảng giá</a>
       <a href="chuong-trinh.html">Chương trình</a>
-      <a href="sale.html" class="nav-btn active" style="background:var(--accent);">Tạo đơn</a>
+      <a href="sale.html" class="active">Tạo đơn</a>
+      <a href="don-hang.html">Đơn của tôi</a>
+      <span id="user_box" style="margin-left:12px; color:rgba(255,255,255,0.9); font-size:13px; display:none;">
+        <b id="user_name"></b> · <a href="#" id="btn_logout" style="color:var(--accent);">Đăng xuất</a>
+      </span>
+      <a href="login.html" class="nav-btn" id="btn_login_nav">Đăng nhập</a>
     </div>
   </div>
 </nav>
@@ -118,9 +123,10 @@
       </div>
 
       <div class="actions-bar">
-        <button class="btn btn-outline" onclick="window.print()">🖨️ In báo giá</button>
+        <span id="order_status" style="margin-right:auto; color:var(--text-muted); font-size:13px;"></span>
+        <button class="btn btn-outline" id="btn_draft" disabled>💾 Lưu nháp</button>
         <button class="btn btn-primary" id="btn_preview" disabled>📄 Xuất báo giá PDF</button>
-        <button class="btn btn-success" id="btn_save" disabled>💾 Chốt đơn (Pha B)</button>
+        <button class="btn btn-success" id="btn_finalize" disabled>✅ Chốt đơn</button>
       </div>
     </div>
 
@@ -165,13 +171,84 @@
 
 <script src="assets/data.js"></script>
 <script src="assets/logic.js"></script>
+<script src="assets/api.js"></script>
 <script>
 const state = {
+  record_id: null, // nếu mở lại đơn nháp
+  ma_don: null,
+  status: null,
   ct_id: null, nhom: null,
   kh_ten: '', kh_sdt: '', sale_name: '',
   lines: [],   // [{sku, sl}]
   qua_user: [],
 };
+
+// Auth gate
+let CURRENT_USER = null;
+async function initAuth() {
+  CURRENT_USER = await apiMe();
+  if (CURRENT_USER) {
+    document.getElementById('user_box').style.display = '';
+    document.getElementById('user_name').textContent = CURRENT_USER.name + ' (' + CURRENT_USER.role + ')';
+    document.getElementById('btn_login_nav').style.display = 'none';
+    document.getElementById('sale_name').value = CURRENT_USER.name || CURRENT_USER.email;
+    state.sale_name = CURRENT_USER.name || CURRENT_USER.email;
+    document.getElementById('btn_draft').disabled = false;
+  } else {
+    // Chưa login: disable các action cần API, vẫn cho dùng preview offline
+    document.getElementById('btn_draft').disabled = true;
+    document.getElementById('btn_finalize').disabled = true;
+  }
+}
+document.getElementById('btn_logout')?.addEventListener('click', e => {
+  e.preventDefault();
+  location.href = apiLogoutUrl();
+});
+
+// Load draft nếu có ?id=
+async function loadDraft() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  if (!id || !CURRENT_USER) return;
+  const list = await apiListOrders();
+  const o = list.find(x => x.record_id === id);
+  if (!o) return;
+  const f = o.fields;
+  state.record_id = o.record_id;
+  state.ma_don = typeof f['Mã đơn']==='string' ? f['Mã đơn'] : (f['Mã đơn']?.[0]?.text || '');
+  state.status = f['Trạng thái']?.text || f['Trạng thái'] || 'Nháp';
+  state.kh_ten = typeof f['KH']==='string' ? f['KH'] : (f['KH']?.[0]?.text || '');
+  state.kh_sdt = typeof f['SĐT']==='string' ? f['SĐT'] : (f['SĐT']?.[0]?.text || '');
+  state.nhom = f['Nhóm KH']?.text || f['Nhóm KH'] || '';
+  state.ct_id = f['Chương trình']?.text || f['Chương trình'] || '';
+  document.getElementById('kh_ten').value = state.kh_ten;
+  document.getElementById('kh_sdt').value = state.kh_sdt;
+  document.getElementById('kh_nhom').value = state.nhom;
+  if (state.nhom) document.getElementById('nhom_desc').textContent = CK_GROUPS[state.nhom]?.mota || '';
+  if (state.ct_id) {
+    const el = document.querySelector(`.ct-option[data-ct="${state.ct_id}"]`);
+    if (el) el.click();
+  }
+  // Load lines
+  const lines = await apiGetLines(state.ma_don);
+  state.lines = [];
+  state.qua_user = [];
+  lines.forEach(l => {
+    const sku = typeof l['Mã SKU']==='string' ? l['Mã SKU'] : (l['Mã SKU']?.[0]?.text || '');
+    const sl = l['SL'] || 0;
+    const loai = l['Loại']?.text || l['Loại'] || 'Bán';
+    if (loai === 'Bán') state.lines.push({ sku, sl });
+    else state.qua_user.push({ sku, sl });
+  });
+  refresh();
+  document.getElementById('order_status').innerHTML = `Đơn: <b>${state.ma_don}</b> · <span class="badge badge-${state.status==='Chốt đơn'?'success':(state.status==='Báo giá'?'warn':'primary')}">${state.status}</span>`;
+  if (state.status === 'Chốt đơn' || state.status === 'Đã giao' || state.status === 'Đã TT') {
+    document.getElementById('btn_draft').disabled = true;
+    document.getElementById('btn_finalize').disabled = true;
+  }
+}
+
+initAuth().then(loadDraft);
 
 // Populate nhom dropdown
 const nhomSel = document.getElementById('kh_nhom');
@@ -384,8 +461,68 @@ document.getElementById('btn_preview').addEventListener('click', () => {
   const p = calcPnL(state);
   openQuotePreview(state, p);
 });
-document.getElementById('btn_save').addEventListener('click', () => {
-  alert('Chức năng lưu Lark Base sẽ bật ở Pha B (sắp tới).');
+
+function buildOrderPayload(status) {
+  const p = calcPnL(state);
+  return {
+    status,
+    kh_ten: state.kh_ten, kh_sdt: state.kh_sdt,
+    nhom: state.nhom, ct_id: state.ct_id,
+    tier: p.tier ? p.tier.ten : '',
+    dt_ny: p.dt_ny, dt_thuc: p.dt_thuc,
+    cogs: p.cogs, gv_qua: p.gv_qua,
+    ln_thuan: p.ln_thuan, pct_ln_ny: p.pct_ln_ny,
+    ck_kh: p.ck_kh,
+    lines: p.lines.map(l => ({
+      sku: l.sku, ten: l.ten, sl: l.sl,
+      gia_ny: l.gia_ny, gia_sau_ck: l.gia_sau_ck,
+      thanh_tien: l.thanh_tien, gv_line: l.gv_line
+    })),
+    qua_user: state.qua_user.map(q => {
+      const s = skuById(q.sku);
+      return { sku: q.sku, ten: s?.ten || '', sl: q.sl, gv: s?.gv || 0, gia_ny: s?.ny || 0 };
+    }),
+  };
+}
+
+async function saveOrder(status) {
+  if (!CURRENT_USER) { location.href = 'login.html'; return; }
+  if (!state.ct_id || !state.nhom || !state.kh_ten) {
+    alert('Vui lòng nhập tên KH, nhóm KH và chọn chương trình'); return;
+  }
+  const payload = buildOrderPayload(status);
+  if (state.record_id) {
+    // Update existing — chỉ update status + một số field chính
+    const patch = {
+      'KH': state.kh_ten, 'SĐT': state.kh_sdt, 'Nhóm KH': state.nhom,
+      'Chương trình': state.ct_id, 'Bậc': payload.tier,
+      'DT NY': payload.dt_ny, 'DT thực thu': payload.dt_thuc,
+      'COGS': payload.cogs, 'GV quà': payload.gv_qua,
+      'LN thuần': payload.ln_thuan, '% LN/NY': payload.pct_ln_ny,
+      'Trạng thái': status,
+    };
+    const r = await apiUpdateOrder(state.record_id, patch);
+    if (r.code === 0) {
+      state.status = status;
+      document.getElementById('order_status').innerHTML = `Đơn: <b>${state.ma_don}</b> · <span class="badge badge-${status==='Chốt đơn'?'success':(status==='Báo giá'?'warn':'primary')}">${status}</span>`;
+      alert(`Đã cập nhật đơn ${state.ma_don} → ${status}`);
+    } else alert('Lỗi cập nhật: ' + JSON.stringify(r));
+  } else {
+    const r = await apiCreateOrder(payload);
+    if (r.maDon) {
+      state.record_id = r.orderId;
+      state.ma_don = r.maDon;
+      state.status = status;
+      document.getElementById('order_status').innerHTML = `Đơn: <b>${r.maDon}</b> · <span class="badge badge-${status==='Chốt đơn'?'success':(status==='Báo giá'?'warn':'primary')}">${status}</span>`;
+      alert(`Đã tạo đơn ${r.maDon} (${status})`);
+    } else alert('Lỗi: ' + JSON.stringify(r));
+  }
+}
+
+document.getElementById('btn_draft').addEventListener('click', () => saveOrder('Nháp'));
+document.getElementById('btn_finalize').addEventListener('click', () => {
+  if (!confirm('Chốt đơn sẽ khoá không sửa được. Tiếp tục?')) return;
+  saveOrder('Chốt đơn');
 });
 
 function openQuotePreview(s, p) {

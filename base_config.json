@@ -1,0 +1,10 @@
+{
+  "app_token": "OxKQbdhtuaoF1xssJjxlClBLgkc",
+  "tables": {
+    "Users": "tblxrn5eM82mwbji",
+    "MasterPrice": "tblFXOMf6rEZ6Bj0",
+    "Orders": "tbliaoGSVMsnr6tI",
+    "OrderLines": "tblPbSZyadpk6dFG"
+  },
+  "url": "https://thirtyshine.sg.larksuite.com/base/OxKQbdhtuaoF1xssJjxlClBLgkc"
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập Sale — 30SHINE B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.login-wrap {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: 24px;
+}
+.login-card {
+  background: #fff; border-radius: 16px;
+  padding: 48px; max-width: 420px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.login-logo { font-size: 32px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
+.login-logo .star { color: var(--accent); }
+.login-sub { color: var(--text-soft); margin-bottom: 32px; font-size: 14px; }
+.lark-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #00D6B9; color: #fff;
+  padding: 14px 28px; border-radius: 10px;
+  font-weight: 700; font-size: 15px;
+  text-decoration: none; transition: all 0.15s;
+}
+.lark-btn:hover { background: #00B9A0; color: #fff; transform: translateY(-1px); }
+.notice { background: #FEE2E2; color: #991B1B; padding: 12px; border-radius: 8px;
+  margin-bottom: 20px; font-size: 13px; border-left: 4px solid #DC2626; }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">30<span class="star">★</span>SHINE</div>
+    <div style="font-weight:600; margin-bottom:4px;">Sale Portal — B2B</div>
+    <div class="login-sub">Đăng nhập bằng tài khoản Lark 30Shine để tạo đơn, gửi báo giá và chốt đơn</div>
+
+    <div id="err_notice"></div>
+
+    <a href="#" class="lark-btn" id="btn_login">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zm0 7L2 14l10 5 10-5-10-5z"/></svg>
+      Đăng nhập bằng Lark
+    </a>
+
+    <div style="margin-top:24px; font-size:12px; color:var(--text-muted);">
+      Không có tài khoản Sale? Liên hệ Admin để được cấp quyền.<br>
+      <a href="index.html" style="color:var(--primary);">← Về trang chủ</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const err = params.get('err');
+const email = params.get('email');
+if (err === 'nowl') {
+  document.getElementById('err_notice').innerHTML = `<div class="notice">
+    ⛔ Email <b>${email || ''}</b> chưa được cấp quyền. Liên hệ Admin để thêm vào Users.
+  </div>`;
+}
+document.getElementById('btn_login').href = apiLoginUrl();
+
+// Nếu đã login rồi, redirect
+apiMe().then(u => { if (u) location.href = 'sale.html'; });
+</script>
+</body>
+</html>
