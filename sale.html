@@ -835,10 +835,37 @@ function openQuotePreview(s, p) {
   }
   .print-btn:hover { background-position: 100% 100%; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(212,160,23,0.5); }
 
+  /* Force browsers to print background colors/gradients */
+  html, body, .paper, .doc-header, .doc-footer, th,
+  .total-row.final, .gift-box, .meta-block, .section-head .num,
+  .section-head .tag, .gift-title .tier, .terms, tbody tr:nth-child(even),
+  td code {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
   @media print {
-    body { background: #fff; padding: 0; }
-    .paper { box-shadow: none; border-radius: 0; max-width: 100%; }
-    .print-btn { display: none; }
+    body { background: #fff !important; padding: 0; }
+    .paper {
+      box-shadow: none !important; border-radius: 0 !important;
+      max-width: 100%; margin: 0;
+    }
+    .doc-header {
+      /* Fallback cho browser không render radial gradient trong print */
+      background: #15397F !important;
+      background: linear-gradient(135deg, #15397F 0%, #0A1F4D 100%) !important;
+    }
+    .total-row.final {
+      background: #15397F !important;
+      background: linear-gradient(90deg, #15397F 0%, #225CCC 100%) !important;
+    }
+    .doc-footer { background: #0A1F4D !important; }
+    th { background: #15397F !important; }
+    .gift-box th { background: #92400E !important; }
+    .print-btn { display: none !important; }
+    /* Không để section bị cắt giữa trang */
+    .section-head, .total-box, .gift-box, .sign-block, .terms { page-break-inside: avoid; }
     @page { margin: 10mm; size: A4; }
   }
 </style></head><body>
