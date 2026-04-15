@@ -223,6 +223,99 @@ a:hover { color: var(--primary); }
 .hero-visual {
   position: relative;
 }
+/* Single hero showcase — 1 ảnh lớn, có overlay tag brand */
+.hero-showcase {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.18);
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, #fff 0%, #f5f6fa 100%);
+}
+.hero-showcase img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hero-showcase-tag {
+  position: absolute; left: 24px; bottom: 24px;
+  background: rgba(10,31,77,0.85);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.hero-showcase-tag .brand-name {
+  font-family: var(--font-head);
+  font-weight: 900; font-size: 18px;
+  letter-spacing: 1px;
+  background: var(--gold);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+.hero-showcase-tag .brand-line {
+  font-size: 12px; color: rgba(255,255,255,0.85);
+  margin-top: 4px; letter-spacing: 0.5px;
+}
+@media (max-width: 900px) {
+  .hero-showcase { aspect-ratio: 16/10; }
+}
+
+/* Stats strip — chuyển từ stat card trong hero ra strip riêng giữa hero và content */
+.hero-stats-strip {
+  background: #fff;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0;
+  margin-top: -32px;
+  position: relative; z-index: 5;
+}
+.hero-stats-strip .container {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  border: 1px solid var(--border-light);
+  margin-bottom: 32px;
+}
+.stats-row {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+.stat-cell {
+  text-align: center;
+  padding: 8px 6px;
+  border-right: 1px solid var(--border-light);
+}
+.stat-cell:last-child { border-right: none; }
+.stat-cell .stat-num {
+  font-family: var(--font-head);
+  font-weight: 900; font-size: 32px;
+  color: var(--primary-dark);
+  line-height: 1;
+}
+.stat-cell .stat-num.gold {
+  background: var(--gold);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.stat-cell .stat-cap {
+  font-size: 11px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  font-weight: 700; margin-top: 6px;
+}
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0; }
+  .stat-cell { border-right: none; border-bottom: 1px solid var(--border-light); padding: 14px 8px; }
+  .stat-cell:nth-child(odd) { border-right: 1px solid var(--border-light); }
+  .stat-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .stat-cell:last-child { grid-column: 1 / -1; border-right: none; }
+  .stat-cell .stat-num { font-size: 26px; }
+}
+
 .hero-visual-media {
   display: grid;
   grid-template-columns: 1fr 1fr;
