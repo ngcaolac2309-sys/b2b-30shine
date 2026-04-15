@@ -73,23 +73,39 @@ a:hover { color: var(--primary); }
 .container-narrow { max-width: 960px; margin: 0 auto; padding: 0 24px; }
 
 /* ===== Logo ===== */
-.logo-flame {
-  display: inline-flex; align-items: center; gap: 10px;
+.brand-logo {
+  display: inline-flex; align-items: center; gap: 14px;
+  text-decoration: none;
 }
-.logo-flame svg {
-  width: 32px; height: 32px;
+.brand-logo img {
+  height: 34px; width: auto;
+  display: block;
 }
-.logo-text {
+.brand-label {
   font-family: var(--font-head);
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: 0.5px;
-  line-height: 1;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding-left: 14px;
+  border-left: 1.5px solid var(--border);
+  line-height: 1.1;
 }
-.logo-text .num { color: var(--primary); }
-.logo-text .shine { color: var(--primary); }
-.logo-flame.on-dark .logo-text .num,
-.logo-flame.on-dark .logo-text .shine { color: #fff; }
+.brand-logo-footer {
+  display: inline-block;
+}
+.brand-logo-footer img {
+  height: 38px; width: auto;
+  display: block;
+  margin: 0 auto;
+}
+/* Legacy — backward compat */
+.logo-flame { display: inline-flex; align-items: center; gap: 10px; }
+.logo-flame svg { width: 32px; height: 32px; }
+.logo-text { font-family: var(--font-head); font-weight: 900; font-size: 20px; }
+.logo-text .num, .logo-text .shine { color: var(--primary); }
+.logo-flame.on-dark .logo-text .num, .logo-flame.on-dark .logo-text .shine { color: #fff; }
 
 /* ===== Navbar ===== */
 .nav {
