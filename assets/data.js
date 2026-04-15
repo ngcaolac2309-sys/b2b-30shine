@@ -25,13 +25,52 @@ const MASTER_PRICE = [
 
 // CK cố định theo nhóm KH × nhãn
 const CK_GROUPS = {
-  N1: { ten: 'VIP Đối tác chiến lược', mota: 'Nhà phân phối & chuỗi lớn toàn quốc',          Glanzen: 0.60, Laborie: 0.35, 'Dr.FS': 0.45 },
-  N2: { ten: 'Chuỗi & Sàn TMĐT',       mota: 'Chuỗi salon đa chi nhánh và sàn thương mại điện tử', Glanzen: 0.50, Laborie: 0.33, 'Dr.FS': 0.40 },
-  N3: { ten: 'Đại lý sỉ',              mota: 'Đại lý phân phối khu vực',                     Glanzen: 0.45, Laborie: 0.30, 'Dr.FS': 0.35 },
-  N4: { ten: 'Salon/Barber lớn',       mota: 'Salon, Barber shop quy mô lớn',                Glanzen: 0.35, Laborie: 0.25, 'Dr.FS': 0.30 },
-  N5: { ten: 'Salon/Barber tiêu chuẩn',mota: 'Salon và cửa hàng tiêu chuẩn',                 Glanzen: 0.25, Laborie: 0.20, 'Dr.FS': 0.20 },
-  NQ: { ten: 'Nhượng Quyền 30Shine',   mota: 'Salon trong hệ thống NQ 30Shine',              Glanzen: 0,    Laborie: 0.50, 'Dr.FS': 0   },
+  N1: {
+    ten: 'VIP — Đối tác chiến lược',
+    mota: 'Nhà phân phối & chuỗi lớn toàn quốc',
+    dieu_kien: 'Doanh số cam kết ≥ 300tr/năm · Hợp đồng phân phối chiến lược · Tham gia chương trình Co-Marketing',
+    uu_tien: ['Giá B2B tốt nhất', 'Ưu tiên hàng mới & Limited', 'Hỗ trợ trưng bày, training', 'Sale chuyên biệt'],
+    Glanzen: 0.60, Laborie: 0.35, 'Dr.FS': 0.45,
+  },
+  N2: {
+    ten: 'Chuỗi & Sàn TMĐT',
+    mota: 'Chuỗi salon đa chi nhánh và sàn thương mại điện tử',
+    dieu_kien: 'Chuỗi ≥ 5 chi nhánh HOẶC sàn TMĐT uy tín · Doanh số ≥ 150tr/năm',
+    uu_tien: ['CK cao theo số lượng', 'Hỗ trợ CTKM riêng', 'Giá sỉ ổn định'],
+    Glanzen: 0.50, Laborie: 0.33, 'Dr.FS': 0.40,
+  },
+  N3: {
+    ten: 'Đại lý sỉ khu vực',
+    mota: 'Đại lý phân phối khu vực tỉnh/quận',
+    dieu_kien: 'Đại lý có kho bãi · Doanh số ≥ 80tr/năm · Cam kết phân phối 3 nhãn',
+    uu_tien: ['CK sỉ tốt', 'Hỗ trợ vận chuyển khu vực', 'Tham gia CT1 ưu đãi'],
+    Glanzen: 0.45, Laborie: 0.30, 'Dr.FS': 0.35,
+  },
+  N4: {
+    ten: 'Salon/Barber lớn',
+    mota: 'Salon, Barber shop quy mô lớn (≥ 10 ghế)',
+    dieu_kien: 'Salon/Barber ≥ 10 ghế · Đơn tối thiểu 5tr/lần · Ưu tiên lấy hàng định kỳ',
+    uu_tien: ['CK hấp dẫn', 'Ưu tiên hàng Limited', 'Tham gia CT1 ưu đãi'],
+    Glanzen: 0.35, Laborie: 0.25, 'Dr.FS': 0.30,
+  },
+  N5: {
+    ten: 'Salon/Barber tiêu chuẩn',
+    mota: 'Salon và cửa hàng tiêu chuẩn (< 10 ghế)',
+    dieu_kien: 'Có giấy phép kinh doanh salon/barber · Đơn tối thiểu 3tr/lần',
+    uu_tien: ['Giá sỉ cơ bản', 'Tham gia CT1 khi đạt 5tr/đơn'],
+    Glanzen: 0.25, Laborie: 0.20, 'Dr.FS': 0.20,
+  },
+  NQ: {
+    ten: 'Nhượng Quyền 30Shine',
+    mota: 'Salon trong hệ thống nhượng quyền 30Shine',
+    dieu_kien: 'Salon NQ đang hoạt động trong hệ thống · Áp dụng chính sách nội bộ',
+    uu_tien: ['CT3 Laborie 50% — áp dụng chung', 'Giá nội bộ cho SP khác theo chính sách'],
+    Glanzen: 0, Laborie: 0.50, 'Dr.FS': 0,
+  },
 };
+
+// Thứ tự hiển thị ladder (thấp → cao)
+const GROUP_LADDER = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 // Chương trình KM
 const PROGRAMS = {

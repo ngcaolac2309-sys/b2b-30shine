@@ -49,7 +49,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--font);
   font-size: 15px;
@@ -57,7 +57,9 @@ body {
   color: var(--text);
   background: var(--bg-soft);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+img { max-width: 100%; height: auto; display: block; }
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-head);
@@ -701,6 +703,183 @@ tbody tr:last-child td { border-bottom: none; }
   margin: 0 auto 24px;
   border-radius: 2px;
 }
+
+/* ============ Mobile optimization ============ */
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+
+  .container, .container-narrow { padding: 0 16px; }
+  .section { padding: 48px 0; }
+  .section-title { font-size: 26px; }
+  .section-sub { font-size: 15px; margin-bottom: 32px; }
+
+  /* Nav: hamburger-ish, stack */
+  .nav-inner { height: 60px; padding: 0 16px; }
+  .brand-logo img { height: 28px; }
+  .brand-label { display: none; } /* Ẩn label phụ trên mobile */
+  .nav-links { gap: 0; }
+  .nav-links a {
+    padding: 8px 10px; font-size: 13px;
+  }
+  .nav-links a:not(.nav-btn):not(.active) { display: none; } /* Ẩn các link phụ, chỉ hiện CTA + active */
+  .nav-btn { padding: 8px 14px !important; font-size: 13px !important; }
+
+  /* Hero */
+  .hero { padding: 48px 16px 64px; }
+  .hero h1 { font-size: 30px; }
+  .hero-sub { font-size: 15px; margin-bottom: 24px; }
+  .hero-cta { gap: 10px; }
+  .btn-lg { padding: 12px 20px; font-size: 14px; }
+
+  /* Buttons full-width friendly */
+  .btn { padding: 11px 20px; }
+  .hero-cta .btn { flex: 1; min-width: 140px; }
+
+  /* Cards */
+  .card { padding: 22px; }
+  .card-ct-visual { height: 120px; }
+  .card-ct-visual .ct-visual-num { font-size: 64px; }
+  .card-ct-body { padding: 20px; }
+  .card-ct h3 { font-size: 19px; }
+
+  /* Tables - horizontal scroll on mobile */
+  .table-wrap { overflow-x: auto; }
+  table { min-width: 520px; }
+  th, td { padding: 10px 12px; font-size: 13px; }
+
+  /* Forms */
+  .form-input, .form-select { font-size: 16px; } /* >16px avoids iOS zoom */
+  .line-table input { font-size: 16px; width: 64px; }
+
+  /* PnL sticky off on mobile */
+  .pnl-panel { position: static; }
+
+  /* Filters scroll horizontally */
+  .filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+  .filter-chip { flex-shrink: 0; }
+  .search-input { min-width: 180px; }
+
+  /* Hero visual */
+  .hero-visual-media { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero-visual-media img:nth-child(2) { transform: translateY(10px); }
+  .hero-visual-card { padding: 20px; }
+  .stat-value { font-size: 20px; }
+  .stat-label { font-size: 12px; }
+
+  /* POSM grid on mobile */
+  .posm-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  /* Divider */
+  .divider-gold { margin-bottom: 18px; }
+
+  /* Footer */
+  .footer { padding: 40px 20px 24px; }
+}
+
+@media (max-width: 420px) {
+  .nav-links a:not(.nav-btn) { display: none; }
+  .hero h1 { font-size: 26px; }
+  .section-title { font-size: 22px; }
+  .card-ct-visual .ct-visual-num { font-size: 48px; }
+}
+
+/* ============ Ladder / Chiết khấu bậc ============ */
+.ck-ladder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.ck-ladder-card {
+  background: #fff;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  position: relative;
+  transition: all 0.25s;
+  overflow: hidden;
+}
+.ck-ladder-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow); }
+.ck-ladder-card .rank {
+  position: absolute; top: 14px; right: 14px;
+  font-family: var(--font-head);
+  font-size: 58px; font-weight: 900;
+  background: linear-gradient(135deg, var(--bg-soft) 0%, rgba(160,201,236,0.5) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  line-height: 1;
+  opacity: 0.8;
+}
+.ck-ladder-card.vip { border-color: var(--gold-solid); background: linear-gradient(180deg, #fff 0%, #FFF9E6 100%); }
+.ck-ladder-card.vip .rank {
+  background: var(--gold);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.ck-ladder-card .g-name {
+  font-family: var(--font-head);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+  color: var(--primary); margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.ck-ladder-card .g-title {
+  font-family: var(--font-head);
+  font-weight: 900; font-size: 18px;
+  color: var(--primary-dark);
+  line-height: 1.2; margin-bottom: 12px;
+  max-width: 240px;
+}
+.ck-ladder-card .g-mota {
+  color: var(--text-soft); font-size: 13px; line-height: 1.5;
+  margin-bottom: 16px;
+}
+.ck-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 16px;
+}
+.ck-stat {
+  background: var(--bg-soft);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.ck-stat.nq-none { opacity: 0.3; }
+.ck-stat .brand {
+  font-size: 10px; font-weight: 800;
+  color: var(--text-muted); letter-spacing: 0.5px;
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.ck-stat .pct {
+  font-family: var(--font-head);
+  font-weight: 900; font-size: 20px;
+  color: var(--primary);
+}
+.ck-ladder-card.vip .ck-stat .pct {
+  background: var(--gold); -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.ck-cond {
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.ck-cond-label {
+  font-size: 10px; font-weight: 800; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.ck-cond-text {
+  font-size: 12px; color: var(--text); line-height: 1.55;
+}
+.ck-bens {
+  list-style: none;
+  margin-top: 10px;
+  font-size: 12px; color: var(--text-soft);
+}
+.ck-bens li {
+  padding-left: 16px; position: relative; line-height: 1.7;
+}
+.ck-bens li::before {
+  content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 800;
+}
+.ck-ladder-card.vip .ck-bens li::before { color: var(--gold-solid); }
 
 /* Print */
 @media print {

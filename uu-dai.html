@@ -217,6 +217,10 @@
       <span class="hero-chip">💎 <b>3 nhãn hàng</b> chính hãng</span>
       <span class="hero-chip">🎁 Quà tặng theo <b>bậc đơn</b></span>
     </div>
+    <div style="margin-top:32px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="#ladder" class="btn btn-primary btn-lg">Xem bảng chiết khấu 5 bậc</a>
+      <a href="#ct1" class="btn btn-ghost btn-lg">Xem 3 chương trình</a>
+    </div>
   </div>
 </section>
 
@@ -228,6 +232,30 @@
       <div class="tl-item"><div class="num">3</div><div class="lbl">Nhãn hàng</div><div class="title">Glanzen · Laborie · Dr.FS</div></div>
       <div class="tl-item"><div class="num">18</div><div class="lbl">Sản phẩm áp dụng</div><div class="title">SKU chính thức</div></div>
       <div class="tl-item"><div class="num">60%</div><div class="lbl">Ưu đãi tối đa</div><div class="title">Cho đối tác VIP</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LADDER — 5 bậc đại lý -->
+<section class="section section-white" id="ladder">
+  <div class="container">
+    <div class="section-head-tag" style="text-align:center;">BẢNG CHIẾT KHẤU</div>
+    <h2 class="section-title">5 bậc đại lý — <span class="gold">Càng cao, ưu đãi càng lớn</span></h2>
+    <div class="divider-gold"></div>
+    <p class="section-sub">Mức chiết khấu trên giá niêm yết theo từng nhãn hàng. Xếp hạng dựa trên quy mô, doanh số và cam kết phân phối. Sale phụ trách sẽ xác nhận hạng của Quý đối tác khi lên đơn đầu tiên.</p>
+
+    <div class="ck-ladder" id="ckLadder"></div>
+
+    <div class="card mt-32" style="background:linear-gradient(135deg, #F1F6FF 0%, #E4EEFE 100%); border:none;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+        <span style="font-size:22px;">💡</span>
+        <h3 style="color:var(--primary-dark); margin:0; font-size:18px;">Làm sao để lên hạng?</h3>
+      </div>
+      <p style="color:var(--text); line-height:1.7;">
+        Chúng tôi đánh giá hạng đại lý <b>mỗi 6 tháng</b> dựa trên doanh số, tần suất lấy hàng và mức độ hợp tác lâu dài.
+        Các đối tác đạt các mốc doanh số cao sẽ được <b>đề xuất nâng hạng</b> để hưởng chiết khấu tốt hơn cho kỳ tiếp theo.
+        Liên hệ Sale phụ trách để nhận lộ trình nâng hạng phù hợp với doanh nghiệp của bạn.
+      </p>
     </div>
   </div>
 </section>
@@ -431,6 +459,45 @@ renderTiers('CT3', 'ct3-tiers');
 renderSkusTable('CT1', 'ct1-skus');
 renderSkusTable('CT2', 'ct2-skus');
 renderSkusTable('CT3', 'ct3-skus', true);
+
+// Render ladder chiết khấu (5 bậc — không show NQ vì nội bộ)
+function renderLadder() {
+  const el = document.getElementById('ckLadder');
+  // Thứ tự hiển thị: hạng thấp → cao (để người xem thấy hành trình lên hạng)
+  const order = ['N5', 'N4', 'N3', 'N2', 'N1'];
+  el.innerHTML = order.map((code, i) => {
+    const g = CK_GROUPS[code];
+    const isVip = code === 'N1';
+    const stats = [
+      { brand: 'Glanzen', pct: g.Glanzen },
+      { brand: 'Laborie', pct: g.Laborie },
+      { brand: 'Dr.FS',  pct: g['Dr.FS'] },
+    ];
+    return `
+      <div class="ck-ladder-card${isVip ? ' vip' : ''}">
+        <div class="rank">${code}</div>
+        <div class="g-name">Bậc ${i+1}${isVip ? ' · VIP' : ''}</div>
+        <div class="g-title">${g.ten.replace(/^[^—]*—\s*/, '')}</div>
+        <div class="g-mota">${g.mota}</div>
+        <div class="ck-stats">
+          ${stats.map(s => `
+            <div class="ck-stat">
+              <div class="brand">${s.brand}</div>
+              <div class="pct">${s.pct > 0 ? (s.pct * 100).toFixed(0) + '%' : '—'}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="ck-cond">
+          <div class="ck-cond-label">Điều kiện xếp hạng</div>
+          <div class="ck-cond-text">${g.dieu_kien || ''}</div>
+        </div>
+        <ul class="ck-bens">
+          ${(g.uu_tien || []).map(b => `<li>${b}</li>`).join('')}
+        </ul>
+      </div>`;
+  }).join('');
+}
+renderLadder();
 </script>
 </body>
 </html>
