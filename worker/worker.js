@@ -143,35 +143,61 @@ async function handleCallback(env, url) {
   const code = url.searchParams.get('code');
   if (!code) return new Response('Missing code', { status: 400 });
 
-  // Exchange code for user_access_token (v2 OAuth)
-  const r1 = await fetch(`${LARK_BASE}/authen/v2/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      grant_type: 'authorization_code',
-      client_id: env.LARK_APP_ID,
-      client_secret: env.LARK_APP_SECRET,
-      code,
-      redirect_uri: `${url.origin}/auth/callback`,
-    }),
-  });
-  const tokData = await r1.json();
-  if (!tokData.access_token) return new Response('Token exchange failed: ' + JSON.stringify(tokData), { status: 500 });
+  let tokData, userData, info = {}, email = '';
 
-  // Get user info
-  const r2 = await fetch(`${LARK_BASE}/authen/v1/user_info`, {
-    headers: { 'Authorization': `Bearer ${tokData.access_token}` },
-  });
-  const userData = await r2.json();
-  const info = userData?.data || {};
-  const email = info.email || info.enterprise_email || '';
+  // Step 1: Exchange code for user_access_token
+  try {
+    const r1 = await fetch(`${LARK_BASE}/authen/v2/oauth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        client_id: env.LARK_APP_ID,
+        client_secret: env.LARK_APP_SECRET,
+        code,
+        redirect_uri: `${url.origin}/auth/callback`,
+      }),
+    });
+    tokData = await r1.json();
+  } catch (e) {
+    return new Response('Step1 token fetch error: ' + e.message, { status: 500 });
+  }
+
+  if (!tokData || !tokData.access_token) {
+    return new Response('<pre>Token exchange failed.\nResponse: ' + JSON.stringify(tokData, null, 2) + '</pre>', {
+      status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+  }
+
+  // Step 2: Get user info
+  try {
+    const r2 = await fetch(`${LARK_BASE}/authen/v1/user_info`, {
+      headers: { 'Authorization': `Bearer ${tokData.access_token}` },
+    });
+    userData = await r2.json();
+    info = userData?.data || {};
+    email = info.email || info.enterprise_email || '';
+  } catch (e) {
+    return new Response('Step2 user_info error: ' + e.message, { status: 500 });
+  }
 
   if (!email) {
-    return new Response('Không lấy được email từ Lark. Cấp quyền authen:user.email:read cho app.', { status: 403 });
+    return new Response(`<pre>Không lấy được email từ Lark.
+user_info response: ${JSON.stringify(userData, null, 2)}
+Cần scope: contact:user.email:readonly / Obtain user's email information</pre>`, {
+      status: 403, headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
   }
 
   // Check whitelist
-  const user = await getUserByEmail(env, email);
+  let user;
+  try {
+    user = await getUserByEmail(env, email);
+  } catch (e) {
+    return new Response('Step3 whitelist lookup error: ' + e.message + '\nEmail: ' + email, {
+      status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
+  }
   if (!user || !user.active) {
     const redirectHome = `${env.SITE_ORIGIN}${env.SITE_BASE_PATH}/login.html?err=nowl&email=${encodeURIComponent(email)}`;
     return Response.redirect(redirectHome, 302);
