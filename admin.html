@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — 30SHINE B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+body { visibility: hidden; }
+body.auth-ok { visibility: visible; }
+.auth-loading {
+  position: fixed; inset: 0; z-index: 9999; visibility: visible;
+  background: linear-gradient(135deg, #15397F 0%, #0A1F4D 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; font-family: 'Manrope', sans-serif;
+}
+.auth-loading .spinner {
+  width: 48px; height: 48px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: #D4A017;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 24px 0; }
+@media (max-width: 900px) { .admin-layout { grid-template-columns: 1fr; } }
+.admin-sidebar {
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  padding: 16px; box-shadow: var(--shadow-sm);
+  height: fit-content; position: sticky; top: 88px;
+}
+.admin-sidebar h4 {
+  font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 1.2px; margin-bottom: 10px; padding-left: 8px;
+}
+.admin-nav a {
+  display: block; padding: 10px 12px; margin-bottom: 2px;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  color: var(--text-soft); transition: all 0.15s;
+}
+.admin-nav a:hover { background: var(--bg-soft); color: var(--primary); }
+.admin-nav a.active { background: var(--primary); color: #fff; }
+
+.admin-section { display: none; }
+.admin-section.active { display: block; }
+.admin-section h2 {
+  font-size: 24px; color: var(--primary-dark); margin-bottom: 8px; font-weight: 800;
+}
+.admin-section .desc { color: var(--text-soft); margin-bottom: 20px; }
+
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+.toolbar .search-input { flex: 1; max-width: 320px; }
+
+.edit-btn, .del-btn {
+  border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; font-weight: 600; margin-right: 4px;
+}
+.edit-btn { background: var(--primary); color: #fff; }
+.del-btn { background: #FEE2E2; color: #991B1B; }
+.edit-btn:hover { background: var(--primary-light); }
+
+.modal {
+  position: fixed; inset: 0; background: rgba(10,31,77,0.6);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.modal.open { display: flex; }
+.modal-body {
+  background: #fff; border-radius: var(--radius); padding: 28px;
+  max-width: 560px; width: 90%; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal-body h3 {
+  font-size: 18px; color: var(--primary-dark); margin-bottom: 16px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--primary);
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+td input, td select {
+  padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; font-family: var(--font); width: 100%;
+}
+td input.num { text-align: right; }
+</style>
+</head>
+<body>
+<div class="auth-loading" id="authLoading">
+  <div class="spinner"></div>
+  <div>Đang xác thực quyền admin...</div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand-logo">
+      <img src="assets/brand/mau_xanh.png" alt="30Shine" />
+      <span class="brand-label">Admin Panel</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Trang chủ</a>
+      <a href="sale.html">Sale</a>
+      <a href="don-hang.html">Đơn hàng</a>
+      <a href="admin.html" class="active">Admin</a>
+      <span style="margin-left:12px; color:var(--text-soft); font-size:13px;">
+        <b id="user_name"></b> · <a href="#" id="btn_logout">Đăng xuất</a>
+      </span>
+    </div>
+  </div>
+</nav>
+
+<section style="background:linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color:#fff; padding:40px 24px;">
+  <div class="container">
+    <h1 style="font-family:var(--font-head); font-size:30px; font-weight:900;">⚙️ Admin Panel</h1>
+    <p style="color:rgba(255,255,255,0.85); margin-top:6px;">Quản trị hệ thống — Users, Master giá, Chiết khấu nhóm KH</p>
+  </div>
+</section>
+
+<div class="container">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <h4>Quản trị</h4>
+      <nav class="admin-nav">
+        <a href="#users" data-section="users" class="active">👥 Người dùng</a>
+        <a href="#master" data-section="master">💎 Master giá</a>
+        <a href="#groups" data-section="groups">📊 CK nhóm KH</a>
+        <a href="#orders" data-section="orders">📋 Tất cả đơn</a>
+      </nav>
+    </aside>
+
+    <main>
+      <!-- Users -->
+      <section class="admin-section active" id="sec-users">
+        <h2>Quản lý người dùng</h2>
+        <p class="desc">Add email Lark → role → Active. Login bằng email này vào portal. Sale chỉ thấy đơn mình, Admin thấy tất cả, View chỉ xem bảng giá.</p>
+        <div class="toolbar">
+          <input type="text" class="search-input" id="user_search" placeholder="🔍 Tìm email/tên...">
+          <button class="btn btn-primary btn-sm" id="btn_add_user">+ Thêm user</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Email</th><th>Họ tên</th><th class="center">Role</th><th class="center">Active</th><th>Ghi chú</th><th></th></tr></thead>
+            <tbody id="users_body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Master -->
+      <section class="admin-section" id="sec-master">
+        <h2>Master giá & giá vốn</h2>
+        <p class="desc">Sửa giá NY, giá vốn, CK theo nhóm. Update → phản ánh ngay khi Sale tạo đơn mới.</p>
+        <div class="toolbar">
+          <input type="text" class="search-input" id="master_search" placeholder="🔍 Tìm SKU/tên...">
+          <button class="btn btn-primary btn-sm" id="btn_add_master">+ Thêm SKU</button>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>SKU</th><th>Tên SP</th><th>Nhãn</th>
+              <th class="num">Giá vốn</th><th class="num">Giá NY</th>
+              <th class="num">CK N1</th><th class="num">CK N2</th><th class="num">CK N3</th><th class="num">CK N4</th><th class="num">CK N5</th>
+              <th class="center">Active</th><th></th>
+            </tr></thead>
+            <tbody id="master_body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Groups info -->
+      <section class="admin-section" id="sec-groups">
+        <h2>Cấu hình nhóm KH</h2>
+        <p class="desc">CK nhóm được set trực tiếp trên từng SKU ở Master giá (cột CK N1-N5). Mỗi SKU có thể có CK khác nhau nếu muốn ưu đãi đặc biệt.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nhóm</th><th>Mô tả</th><th class="center">CK tiêu chuẩn Glanzen</th><th class="center">CK tiêu chuẩn Laborie</th></tr></thead>
+            <tbody id="groups_body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- All orders (admin view) -->
+      <section class="admin-section" id="sec-orders">
+        <h2>Tất cả đơn hàng (Admin)</h2>
+        <p class="desc">Xem đơn của tất cả Sale — mở <a href="don-hang.html">trang Đơn của tôi</a> (admin thấy full).</p>
+        <a href="don-hang.html" class="btn btn-primary">Mở trang Đơn hàng →</a>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- User modal -->
+<div class="modal" id="userModal">
+  <div class="modal-body">
+    <h3 id="userModalTitle">Thêm user</h3>
+    <div class="form-grid">
+      <div>
+        <label class="form-label">Email Lark *</label>
+        <input type="email" class="form-input" id="u_email">
+      </div>
+      <div>
+        <label class="form-label">Họ tên</label>
+        <input type="text" class="form-input" id="u_name">
+      </div>
+      <div>
+        <label class="form-label">Role *</label>
+        <select class="form-select" id="u_role">
+          <option value="view">view — Chỉ xem bảng giá</option>
+          <option value="sale">sale — Tạo đơn, xem đơn của mình</option>
+          <option value="admin">admin — Toàn quyền</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Ghi chú</label>
+        <input type="text" class="form-input" id="u_note">
+      </div>
+      <div>
+        <label><input type="checkbox" id="u_active" checked> Active</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeUserModal()">Huỷ</button>
+      <button class="btn btn-primary btn-sm" id="u_save">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Master modal -->
+<div class="modal" id="masterModal">
+  <div class="modal-body">
+    <h3 id="masterModalTitle">Thêm SKU</h3>
+    <div class="form-grid form-grid-2">
+      <div>
+        <label class="form-label">Mã SKU *</label>
+        <input type="text" class="form-input" id="m_sku">
+      </div>
+      <div>
+        <label class="form-label">Nhãn *</label>
+        <select class="form-select" id="m_nhan">
+          <option>Glanzen</option><option>Laborie</option><option>Dr.FS</option>
+        </select>
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="form-label">Tên SP *</label>
+        <input type="text" class="form-input" id="m_ten">
+      </div>
+      <div>
+        <label class="form-label">Giá vốn *</label>
+        <input type="number" class="form-input" id="m_gv">
+      </div>
+      <div>
+        <label class="form-label">Giá NY *</label>
+        <input type="number" class="form-input" id="m_ny">
+      </div>
+      <div><label class="form-label">CK N1</label><input type="number" step="0.01" class="form-input" id="m_ck1" placeholder="0.60"></div>
+      <div><label class="form-label">CK N2</label><input type="number" step="0.01" class="form-input" id="m_ck2" placeholder="0.50"></div>
+      <div><label class="form-label">CK N3</label><input type="number" step="0.01" class="form-input" id="m_ck3" placeholder="0.45"></div>
+      <div><label class="form-label">CK N4</label><input type="number" step="0.01" class="form-input" id="m_ck4" placeholder="0.35"></div>
+      <div><label class="form-label">CK N5</label><input type="number" step="0.01" class="form-input" id="m_ck5" placeholder="0.25"></div>
+      <div><label><input type="checkbox" id="m_active" checked> Active</label></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeMasterModal()">Huỷ</button>
+      <button class="btn btn-primary btn-sm" id="m_save">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand"><a href="index.html" class="brand-logo-footer"><img src="assets/brand/mau_trang.png" alt="30Shine"/></a></div>
+  <div class="footer-copy">© 2026 30Shine · Admin Panel</div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/api.js"></script>
+<script>
+function getField(f, key) {
+  const v = f[key];
+  if (v === undefined || v === null) return '';
+  if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return v;
+  if (v.text) return v.text;
+  if (Array.isArray(v) && v[0]?.text) return v[0].text;
+  return v;
+}
+
+let USERS = [], MASTER = [];
+
+async function init() {
+  const me = await apiMe();
+  if (!me) { location.href = 'login.html?next=/admin.html'; return; }
+  if (me.role !== 'admin') {
+    alert('Chỉ Admin mới vào được trang này. Role của bạn: ' + me.role);
+    location.href = 'sale.html';
+    return;
+  }
+  document.getElementById('authLoading').remove();
+  document.body.classList.add('auth-ok');
+  document.getElementById('user_name').textContent = me.name + ' (admin)';
+  document.getElementById('btn_logout').addEventListener('click', e => {
+    e.preventDefault(); location.href = apiLogoutUrl();
+  });
+
+  await loadUsers();
+  await loadMaster();
+  renderGroups();
+}
+
+async function loadUsers() {
+  USERS = await apiListUsers();
+  renderUsers();
+}
+function renderUsers() {
+  const q = (document.getElementById('user_search').value || '').toLowerCase();
+  const list = USERS.filter(u => {
+    if (!q) return true;
+    return (getField(u, 'Email') + getField(u, 'Họ tên')).toLowerCase().includes(q);
+  });
+  document.getElementById('users_body').innerHTML = list.map(u => `
+    <tr>
+      <td>${getField(u, 'Email') || ''}</td>
+      <td>${getField(u, 'Họ tên') || ''}</td>
+      <td class="center"><span class="badge badge-${getField(u,'Role')==='admin'?'accent':(getField(u,'Role')==='sale'?'primary':'success')}">${getField(u,'Role')}</span></td>
+      <td class="center">${u['Active'] ? '✅' : '⛔'}</td>
+      <td>${getField(u, 'Ghi chú') || ''}</td>
+      <td class="center" style="white-space:nowrap;">
+        <button class="edit-btn" data-action="edit-user" data-id="${u.record_id}">Sửa</button>
+        <button class="del-btn" data-action="del-user" data-id="${u.record_id}">Xoá</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="padding:40px; text-align:center; color:var(--text-muted);">Chưa có user</td></tr>';
+}
+
+async function loadMaster() {
+  MASTER = await apiListMaster();
+  renderMaster();
+}
+function renderMaster() {
+  const q = (document.getElementById('master_search').value || '').toLowerCase();
+  const list = MASTER.filter(m => {
+    if (!q) return true;
+    return (getField(m, 'Mã SKU') + getField(m, 'Tên SP')).toLowerCase().includes(q);
+  });
+  document.getElementById('master_body').innerHTML = list.map(m => `
+    <tr>
+      <td><code style="background:var(--bg-soft); padding:2px 6px; border-radius:4px; font-size:12px;">${getField(m,'Mã SKU')}</code></td>
+      <td>${getField(m,'Tên SP') || ''}</td>
+      <td><span class="tag tag-${getField(m,'Nhãn')==='Dr.FS'?'drfs':getField(m,'Nhãn').toLowerCase()}">${getField(m,'Nhãn')}</span></td>
+      <td class="num font-mono">${fmtNum(m['Giá vốn'] || 0)}</td>
+      <td class="num font-mono"><b>${fmtNum(m['Giá NY'] || 0)}</b></td>
+      <td class="num font-mono">${fmtPct(m['CK N1'] || 0)}</td>
+      <td class="num font-mono">${fmtPct(m['CK N2'] || 0)}</td>
+      <td class="num font-mono">${fmtPct(m['CK N3'] || 0)}</td>
+      <td class="num font-mono">${fmtPct(m['CK N4'] || 0)}</td>
+      <td class="num font-mono">${fmtPct(m['CK N5'] || 0)}</td>
+      <td class="center">${m['Active'] ? '✅' : '⛔'}</td>
+      <td class="center" style="white-space:nowrap;">
+        <button class="edit-btn" data-action="edit-master" data-id="${m.record_id}">Sửa</button>
+        <button class="del-btn" data-action="del-master" data-id="${m.record_id}">Xoá</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="12" style="padding:40px; text-align:center; color:var(--text-muted);">Chưa có SKU</td></tr>';
+}
+
+function renderGroups() {
+  const tb = document.getElementById('groups_body');
+  tb.innerHTML = Object.entries(CK_GROUPS).map(([k, g]) => `
+    <tr>
+      <td><span class="badge badge-primary">${k}</span></td>
+      <td><b>${g.ten}</b> <span class="text-muted" style="font-size:12px;">— ${g.mota}</span></td>
+      <td class="center font-mono">${g.Glanzen ? fmtPct(g.Glanzen) : '—'}</td>
+      <td class="center font-mono">${g.Laborie ? fmtPct(g.Laborie) : '—'}</td>
+    </tr>`).join('');
+}
+
+// Sidebar nav
+document.querySelectorAll('.admin-nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const s = a.dataset.section;
+    document.querySelectorAll('.admin-nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.admin-section').forEach(x => x.classList.remove('active'));
+    document.getElementById('sec-' + s).classList.add('active');
+    location.hash = s;
+  });
+});
+if (location.hash) {
+  const a = document.querySelector(`.admin-nav a[data-section="${location.hash.slice(1)}"]`);
+  if (a) a.click();
+}
+
+// Search filters
+document.getElementById('user_search').addEventListener('input', renderUsers);
+document.getElementById('master_search').addEventListener('input', renderMaster);
+
+// ========== User modal ==========
+let editingUserId = null;
+function openUserModal(user = null) {
+  editingUserId = user ? user.record_id : null;
+  document.getElementById('userModalTitle').textContent = user ? 'Sửa user' : 'Thêm user';
+  document.getElementById('u_email').value = user ? getField(user, 'Email') : '';
+  document.getElementById('u_name').value = user ? getField(user, 'Họ tên') : '';
+  document.getElementById('u_role').value = user ? (getField(user, 'Role') || 'view') : 'view';
+  document.getElementById('u_note').value = user ? getField(user, 'Ghi chú') : '';
+  document.getElementById('u_active').checked = user ? !!user['Active'] : true;
+  document.getElementById('userModal').classList.add('open');
+}
+function closeUserModal() { document.getElementById('userModal').classList.remove('open'); }
+document.getElementById('btn_add_user').addEventListener('click', () => openUserModal());
+document.getElementById('u_save').addEventListener('click', async () => {
+  const email = document.getElementById('u_email').value.trim();
+  if (!email) { alert('Email bắt buộc'); return; }
+  const fields = {
+    'Email': email,
+    'Họ tên': document.getElementById('u_name').value.trim(),
+    'Role': document.getElementById('u_role').value,
+    'Ghi chú': document.getElementById('u_note').value.trim(),
+    'Active': document.getElementById('u_active').checked,
+  };
+  let r;
+  if (editingUserId) r = await apiUpdateUser(editingUserId, fields);
+  else r = await apiCreateUser(fields);
+  if (r.code === 0) { closeUserModal(); await loadUsers(); }
+  else alert('Lỗi: ' + JSON.stringify(r));
+});
+
+// ========== Master modal ==========
+let editingMasterId = null;
+function openMasterModal(m = null) {
+  editingMasterId = m ? m.record_id : null;
+  document.getElementById('masterModalTitle').textContent = m ? 'Sửa SKU' : 'Thêm SKU';
+  document.getElementById('m_sku').value = m ? getField(m, 'Mã SKU') : '';
+  document.getElementById('m_nhan').value = m ? (getField(m, 'Nhãn') || 'Glanzen') : 'Glanzen';
+  document.getElementById('m_ten').value = m ? getField(m, 'Tên SP') : '';
+  document.getElementById('m_gv').value = m ? (m['Giá vốn'] || 0) : '';
+  document.getElementById('m_ny').value = m ? (m['Giá NY'] || 0) : '';
+  document.getElementById('m_ck1').value = m ? (m['CK N1'] || '') : '';
+  document.getElementById('m_ck2').value = m ? (m['CK N2'] || '') : '';
+  document.getElementById('m_ck3').value = m ? (m['CK N3'] || '') : '';
+  document.getElementById('m_ck4').value = m ? (m['CK N4'] || '') : '';
+  document.getElementById('m_ck5').value = m ? (m['CK N5'] || '') : '';
+  document.getElementById('m_active').checked = m ? !!m['Active'] : true;
+  document.getElementById('masterModal').classList.add('open');
+}
+function closeMasterModal() { document.getElementById('masterModal').classList.remove('open'); }
+document.getElementById('btn_add_master').addEventListener('click', () => openMasterModal());
+document.getElementById('m_save').addEventListener('click', async () => {
+  const sku = document.getElementById('m_sku').value.trim();
+  if (!sku) { alert('SKU bắt buộc'); return; }
+  const fields = {
+    'Mã SKU': sku,
+    'Nhãn': document.getElementById('m_nhan').value,
+    'Tên SP': document.getElementById('m_ten').value.trim(),
+    'Giá vốn': Number(document.getElementById('m_gv').value) || 0,
+    'Giá NY':  Number(document.getElementById('m_ny').value) || 0,
+    'CK N1': Number(document.getElementById('m_ck1').value) || 0,
+    'CK N2': Number(document.getElementById('m_ck2').value) || 0,
+    'CK N3': Number(document.getElementById('m_ck3').value) || 0,
+    'CK N4': Number(document.getElementById('m_ck4').value) || 0,
+    'CK N5': Number(document.getElementById('m_ck5').value) || 0,
+    'Active': document.getElementById('m_active').checked,
+  };
+  let r;
+  if (editingMasterId) r = await apiUpdateMaster(editingMasterId, fields);
+  else r = await apiCreateMaster(fields);
+  if (r.code === 0) { closeMasterModal(); await loadMaster(); }
+  else alert('Lỗi: ' + JSON.stringify(r));
+});
+
+// Event delegation for edit/delete buttons
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (action === 'edit-user') openUserModal(USERS.find(u => u.record_id === id));
+  else if (action === 'del-user') {
+    if (!confirm('Xoá user này?')) return;
+    await apiDeleteUser(id); await loadUsers();
+  } else if (action === 'edit-master') openMasterModal(MASTER.find(m => m.record_id === id));
+  else if (action === 'del-master') {
+    if (!confirm('Xoá SKU này?')) return;
+    await apiDeleteMaster(id); await loadMaster();
+  }
+});
+
+init();
+</script>
+</body>
+</html>

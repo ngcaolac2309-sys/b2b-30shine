@@ -41,3 +41,33 @@ async function apiGetLines(maDon) {
 
 function apiLoginUrl() { return API_BASE + '/auth/login'; }
 function apiLogoutUrl() { return API_BASE + '/auth/logout'; }
+
+// ----- Master price -----
+async function apiListMaster() {
+  const r = await apiFetch('/api/master');
+  return r._unauth ? [] : (r.data || []);
+}
+async function apiCreateMaster(fields) {
+  return apiFetch('/api/master', { method: 'POST', body: JSON.stringify({ fields }) });
+}
+async function apiUpdateMaster(recordId, patch) {
+  return apiFetch(`/api/master/${recordId}`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+async function apiDeleteMaster(recordId) {
+  return apiFetch(`/api/master/${recordId}`, { method: 'DELETE' });
+}
+
+// ----- Users -----
+async function apiListUsers() {
+  const r = await apiFetch('/api/users');
+  return r._unauth || r.err ? [] : (r.data || []);
+}
+async function apiCreateUser(fields) {
+  return apiFetch('/api/users', { method: 'POST', body: JSON.stringify({ fields }) });
+}
+async function apiUpdateUser(recordId, patch) {
+  return apiFetch(`/api/users/${recordId}`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+async function apiDeleteUser(recordId) {
+  return apiFetch(`/api/users/${recordId}`, { method: 'DELETE' });
+}

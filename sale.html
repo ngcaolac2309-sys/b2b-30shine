@@ -78,6 +78,7 @@ body.auth-ok { visibility: visible; }
       <a href="chuong-trinh.html">Chương trình</a>
       <a href="sale.html" class="active">Tạo đơn</a>
       <a href="don-hang.html">Đơn của tôi</a>
+      <a href="admin.html" id="nav_admin" style="display:none;">⚙️ Admin</a>
       <span id="user_box" style="margin-left:12px; color:rgba(255,255,255,0.9); font-size:13px; display:none;">
         <b id="user_name"></b> · <a href="#" id="btn_logout" style="color:var(--accent);">Đăng xuất</a>
       </span>
@@ -215,12 +216,18 @@ async function initAuth() {
     location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search);
     return false;
   }
+  if (CURRENT_USER.role !== 'admin' && CURRENT_USER.role !== 'sale') {
+    alert('Tài khoản "' + CURRENT_USER.role + '" chỉ có quyền xem bảng giá.');
+    location.href = 'bang-gia.html';
+    return false;
+  }
   // Xác thực OK → show page
   document.getElementById('authLoading').remove();
   document.body.classList.add('auth-ok');
   document.getElementById('user_box').style.display = '';
   document.getElementById('user_name').textContent = CURRENT_USER.name + ' (' + CURRENT_USER.role + ')';
   document.getElementById('btn_login_nav').style.display = 'none';
+  if (CURRENT_USER.role === 'admin') document.getElementById('nav_admin').style.display = '';
   document.getElementById('sale_name').value = CURRENT_USER.name || CURRENT_USER.email;
   state.sale_name = CURRENT_USER.name || CURRENT_USER.email;
   document.getElementById('btn_draft').disabled = false;

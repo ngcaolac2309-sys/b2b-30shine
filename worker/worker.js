@@ -334,6 +334,49 @@ async function listMaster(env) {
   return (r?.data?.items || []).map(it => ({ record_id: it.record_id, ...it.fields }));
 }
 
+async function updateMaster(env, recordId, patch) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_MASTER}/records/${recordId}`,
+    { method: 'PUT', body: JSON.stringify({ fields: patch }) });
+}
+
+async function createMaster(env, fields) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_MASTER}/records`,
+    { method: 'POST', body: JSON.stringify({ fields }) });
+}
+
+async function deleteMaster(env, recordId) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_MASTER}/records/${recordId}`,
+    { method: 'DELETE' });
+}
+
+// ========== Users CRUD ==========
+async function listUsers(env) {
+  const r = await larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_USERS}/records?page_size=200`);
+  return (r?.data?.items || []).map(it => ({ record_id: it.record_id, ...it.fields }));
+}
+
+async function createUser(env, fields) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_USERS}/records`,
+    { method: 'POST', body: JSON.stringify({ fields }) });
+}
+
+async function updateUser(env, recordId, patch) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_USERS}/records/${recordId}`,
+    { method: 'PUT', body: JSON.stringify({ fields: patch }) });
+}
+
+async function deleteUser(env, recordId) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_USERS}/records/${recordId}`,
+    { method: 'DELETE' });
+}
+
 // ========== Router ==========
 export default {
   async fetch(req, env) {
@@ -374,10 +417,62 @@ export default {
 
       if (!session) return json({ err: 'not_authenticated' }, 401, cors);
 
-      // GET /api/master
+      // GET /api/master — ai cũng xem được (sale + admin + view đều xem bảng giá)
       if (url.pathname === '/api/master' && req.method === 'GET') {
         const list = await listMaster(env);
         return json({ data: list }, 200, cors);
+      }
+
+      // Admin-only endpoints
+      const requireAdmin = () => {
+        if (session.role !== 'admin') return json({ err: 'admin_required' }, 403, cors);
+        return null;
+      };
+
+      // POST /api/master — admin tạo SKU mới
+      if (url.pathname === '/api/master' && req.method === 'POST') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await createMaster(env, body.fields);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      // PATCH /api/master/:id — admin sửa SKU
+      const mMaster = url.pathname.match(/^\/api\/master\/([^\/]+)$/);
+      if (mMaster && req.method === 'PATCH') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await updateMaster(env, mMaster[1], body);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      if (mMaster && req.method === 'DELETE') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const r = await deleteMaster(env, mMaster[1]);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+
+      // Users CRUD — admin only
+      if (url.pathname === '/api/users' && req.method === 'GET') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const list = await listUsers(env);
+        return json({ data: list }, 200, cors);
+      }
+      if (url.pathname === '/api/users' && req.method === 'POST') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await createUser(env, body.fields);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      const mUser = url.pathname.match(/^\/api\/users\/([^\/]+)$/);
+      if (mUser && req.method === 'PATCH') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await updateUser(env, mUser[1], body);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      if (mUser && req.method === 'DELETE') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const r = await deleteUser(env, mUser[1]);
+        return json(r, r.code === 0 ? 200 : 500, cors);
       }
 
       // GET /api/orders
