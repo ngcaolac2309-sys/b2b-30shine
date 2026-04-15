@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sale Portal — Tạo đơn hàng | 30SHINE B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.workspace { display: grid; grid-template-columns: 1fr 380px; gap: 24px; padding: 24px 0; }
+@media (max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
+.panel-card {
+  background: #fff; border-radius: var(--radius); border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm); padding: 24px; margin-bottom: 20px;
+}
+.panel-card h3 { font-size: 16px; color: var(--primary-dark); margin-bottom: 16px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--primary); font-weight: 700; }
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; background: var(--primary); color: #fff;
+  border-radius: 50%; font-size: 13px; font-weight: 700; margin-right: 8px;
+}
+.ct-pick {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.ct-option {
+  padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.15s; background: #fff;
+}
+.ct-option:hover { border-color: var(--primary); }
+.ct-option.active { border-color: var(--primary); background: #EFF6FF; }
+.ct-option h4 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
+.ct-option p { font-size: 12px; color: var(--text-muted); }
+.line-table input.qty { width: 70px; }
+.line-table select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; }
+.actions-bar {
+  position: sticky; bottom: 0; background: #fff;
+  padding: 16px; border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  display: flex; gap: 12px; justify-content: flex-end;
+}
+.alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 14px; }
+.alert-info { background: #DBEAFE; color: #1E40AF; border-left: 4px solid var(--primary); }
+.alert-warn { background: #FEF3C7; color: #92400E; border-left: 4px solid var(--warn); }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">30<span class="star">★</span>SHINE <span style="font-weight:400; opacity:0.7; font-size:14px; margin-left:4px;">Sale Portal</span></a>
+    <div class="nav-links">
+      <a href="index.html">Trang chủ</a>
+      <a href="bang-gia.html">Bảng giá</a>
+      <a href="chuong-trinh.html">Chương trình</a>
+      <a href="sale.html" class="nav-btn active" style="background:var(--accent);">Tạo đơn</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="workspace">
+    <!-- LEFT: Form -->
+    <div>
+      <div class="panel-card">
+        <h3><span class="step-num">1</span>Thông tin khách hàng</h3>
+        <div class="form-grid form-grid-2">
+          <div>
+            <label class="form-label">Tên khách hàng *</label>
+            <input type="text" class="form-input" id="kh_ten" placeholder="VD: Công ty TNHH Minh Tài">
+          </div>
+          <div>
+            <label class="form-label">Số điện thoại</label>
+            <input type="text" class="form-input" id="kh_sdt" placeholder="VD: 0909xxxxxx">
+          </div>
+          <div>
+            <label class="form-label">Nhóm khách hàng *</label>
+            <select class="form-select" id="kh_nhom">
+              <option value="">-- Chọn nhóm --</option>
+            </select>
+            <div class="form-help" id="nhom_desc"></div>
+          </div>
+          <div>
+            <label class="form-label">Sale phụ trách</label>
+            <input type="text" class="form-input" id="sale_name" placeholder="Tên NV">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3><span class="step-num">2</span>Chọn chương trình</h3>
+        <div class="ct-pick" id="ct_pick">
+          <div class="ct-option" data-ct="CT1">
+            <h4>CT1 • Glanzen × Glanzen</h4>
+            <p>N3-N5 · Mua Glanzen tặng Glanzen</p>
+          </div>
+          <div class="ct-option" data-ct="CT2">
+            <h4>CT2 • Glanzen × Laborie</h4>
+            <p>N1-N2 · Mua Glanzen tặng Laborie</p>
+          </div>
+          <div class="ct-option" data-ct="CT3">
+            <h4>CT3 • Laborie Xả Kho</h4>
+            <p>Tất cả · Giá 201k/chai, tặng theo SL</p>
+          </div>
+        </div>
+        <div id="ct_warn"></div>
+      </div>
+
+      <div class="panel-card">
+        <h3><span class="step-num">3</span>Chi tiết đơn hàng (khách trả tiền)</h3>
+        <div id="line_wrap">
+          <div class="alert alert-info">Chọn chương trình và nhóm KH để bắt đầu</div>
+        </div>
+      </div>
+
+      <div class="panel-card" id="gift_panel" style="display:none;">
+        <h3><span class="step-num">4</span>🎁 Quà tặng đi kèm</h3>
+        <div id="gift_wrap"></div>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn btn-outline" onclick="window.print()">🖨️ In báo giá</button>
+        <button class="btn btn-primary" id="btn_preview" disabled>📄 Xuất báo giá PDF</button>
+        <button class="btn btn-success" id="btn_save" disabled>💾 Chốt đơn (Pha B)</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: PnL Panel -->
+    <div>
+      <div class="pnl-panel" id="pnl">
+        <div class="pnl-header">
+          <h3>📊 P&L MÔ PHỎNG ĐƠN</h3>
+          <div class="tier-badge" id="pnl_tier">Chưa đủ bậc</div>
+        </div>
+        <div class="pnl-body" id="pnl_body">
+          <div class="pnl-row"><span class="lbl">DT niêm yết</span><span class="val" id="pnl_ny">0</span></div>
+          <div class="pnl-row neg"><span class="lbl">− CK KH</span><span class="val" id="pnl_ck">0</span></div>
+          <div class="pnl-row" style="background:#FFF9E6; margin:6px -20px; padding:10px 20px;">
+            <span class="lbl" style="font-weight:600;">= DT thực thu</span>
+            <span class="val" id="pnl_thuc">0</span>
+          </div>
+          <div class="pnl-row neg"><span class="lbl">− Giá vốn hàng bán</span><span class="val" id="pnl_cogs">0</span></div>
+          <div class="pnl-row neg"><span class="lbl">− CK NV (4%)</span><span class="val" id="pnl_nv">0</span></div>
+          <div class="pnl-row neg"><span class="lbl">− Vận hành (5%)</span><span class="val" id="pnl_vh">0</span></div>
+          <div class="pnl-row neg"><span class="lbl">− GV quà tặng</span><span class="val" id="pnl_qua">0</span></div>
+          <div class="pnl-row total pos">
+            <span class="lbl">LN thuần</span>
+            <span class="val" id="pnl_ln">0</span>
+          </div>
+        </div>
+        <div class="pnl-status fail" id="pnl_status">Chưa có đơn</div>
+      </div>
+
+      <div class="panel-card mt-24" style="font-size:13px;">
+        <h3 style="font-size:14px;">💡 Gợi ý</h3>
+        <ul style="padding-left:18px; color:var(--text-soft); line-height:1.7;">
+          <li>Mục tiêu <b>LN ≥ 15% / NY</b></li>
+          <li>Bậc xét trên <b>DT thực thu</b> (sau CK)</li>
+          <li>Quà tặng tính riêng, tách phiếu xuất</li>
+          <li>Hàng tặng NV chọn SKU phù hợp KH</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/logic.js"></script>
+<script>
+const state = {
+  ct_id: null, nhom: null,
+  kh_ten: '', kh_sdt: '', sale_name: '',
+  lines: [],   // [{sku, sl}]
+  qua_user: [],
+};
+
+// Populate nhom dropdown
+const nhomSel = document.getElementById('kh_nhom');
+Object.entries(CK_GROUPS).forEach(([k, g]) => {
+  const opt = document.createElement('option');
+  opt.value = k;
+  opt.textContent = `${k} — ${g.ten}`;
+  nhomSel.appendChild(opt);
+});
+
+nhomSel.addEventListener('change', e => {
+  state.nhom = e.target.value;
+  const g = CK_GROUPS[state.nhom];
+  document.getElementById('nhom_desc').textContent = g ? g.mota : '';
+  refresh();
+});
+['kh_ten','kh_sdt','sale_name'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    state[id] = e.target.value;
+  });
+});
+
+// CT pick
+document.querySelectorAll('.ct-option').forEach(el => {
+  el.addEventListener('click', () => {
+    const ct = el.dataset.ct;
+    document.querySelectorAll('.ct-option').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    state.ct_id = ct;
+    state.lines = [];
+    state.qua_user = [];
+    renderLines();
+    renderGiftPanel();
+    refresh();
+  });
+});
+
+function renderLines() {
+  const wrap = document.getElementById('line_wrap');
+  if (!state.ct_id) {
+    wrap.innerHTML = '<div class="alert alert-info">Chọn chương trình để hiện danh sách sản phẩm</div>';
+    return;
+  }
+  if (!state.nhom) {
+    wrap.innerHTML = '<div class="alert alert-warn">⚠️ Vui lòng chọn <b>nhóm khách hàng</b> trước</div>';
+    return;
+  }
+  const ct = PROGRAMS[state.ct_id];
+
+  // Check nhóm compatible
+  if (!ct.nhom_apply.includes(state.nhom)) {
+    wrap.innerHTML = `<div class="alert alert-warn">⚠️ Nhóm <b>${state.nhom}</b> không áp dụng cho <b>${state.ct_id}</b>.<br>
+      ${state.ct_id} chỉ áp cho: ${ct.nhom_apply.join(', ')}</div>`;
+    return;
+  }
+
+  const ck = getCkForOrder(state.nhom, state.ct_id);
+  wrap.innerHTML = `
+    <div class="alert alert-info">
+      Áp CK <b>${fmtPct(ck)}</b> cho nhóm <b>${state.nhom}</b> trên giá niêm yết.
+      ${state.ct_id === 'CT3' ? 'Bậc tính theo <b>số chai mua</b>.' : 'Bậc tính theo <b>DT thực thu</b>.'}
+    </div>
+    <table class="line-table">
+      <thead>
+        <tr>
+          <th>Mã SKU</th>
+          <th>Tên sản phẩm</th>
+          <th class="num">Giá NY</th>
+          <th class="num">Giá sau CK</th>
+          <th class="num">SL</th>
+          <th class="num">Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody id="line_body"></tbody>
+    </table>
+  `;
+  const tbody = document.getElementById('line_body');
+  ct.skus.forEach(skuId => {
+    const s = skuById(skuId);
+    const gia_sau_ck = s.ny * (1 - ck);
+    const existing = state.lines.find(l => l.sku === skuId);
+    const sl = existing ? existing.sl : 0;
+    const thanh_tien = gia_sau_ck * sl;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code style="background:var(--bg-soft); padding:2px 6px; border-radius:4px; font-size:11px;">${s.sku}</code></td>
+      <td>${s.ten}</td>
+      <td class="num font-mono text-muted">${fmtNum(s.ny)}</td>
+      <td class="num font-mono"><b>${fmtNum(gia_sau_ck)}</b></td>
+      <td class="num"><input type="number" class="qty" min="0" value="${sl}" data-sku="${skuId}"></td>
+      <td class="num font-mono"><b id="tt_${skuId}">${fmtNum(thanh_tien)}</b></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('input.qty').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const sku = e.target.dataset.sku;
+      const sl = parseInt(e.target.value) || 0;
+      let line = state.lines.find(l => l.sku === sku);
+      if (line) line.sl = sl;
+      else state.lines.push({ sku, sl });
+      refresh();
+    });
+  });
+}
+
+function renderGiftPanel() {
+  const panel = document.getElementById('gift_panel');
+  const wrap = document.getElementById('gift_wrap');
+  if (!state.ct_id || !state.nhom) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+  const p = calcPnL(state);
+  const tier = p.tier;
+  if (!tier) {
+    wrap.innerHTML = '<div class="alert alert-warn">Chưa đủ ngưỡng bậc quà tặng — tăng SL đặt hàng để nhận quà.</div>';
+    return;
+  }
+  let fixed_html = '';
+  if (tier.qua) {
+    fixed_html = `<div class="alert alert-info"><b>Gợi ý quà (${tier.ten}):</b> ${tier.qua_text}</div>`;
+  } else {
+    fixed_html = `<div class="alert alert-info"><b>Bậc ${tier.ten}:</b> ${tier.qua_text}</div>`;
+  }
+  // Cho NV chọn SKU quà (all SKU in CT, plus gifts)
+  const ct = PROGRAMS[state.ct_id];
+  let gift_skus = new Set();
+  if (tier.qua) tier.qua.forEach(q => gift_skus.add(q.sku));
+  if (tier.qua_fixed) tier.qua_fixed.forEach(q => gift_skus.add(q.sku));
+  if (tier.qua_options) tier.qua_options.forEach(s => gift_skus.add(s));
+  if (ct.skus) ct.skus.forEach(s => gift_skus.add(s));
+  // Also allow picking any Laborie 250ml for CT2/CT3
+  if (state.ct_id === 'CT2' || state.ct_id === 'CT3') {
+    ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'].forEach(s => gift_skus.add(s));
+  }
+  // SAP_GLZ60, XD_009, XTP_007 for CT1 gifts
+  if (state.ct_id === 'CT1') {
+    ['SAP_GLZ60','XD_009','XTP_007'].forEach(s => gift_skus.add(s));
+  }
+
+  wrap.innerHTML = fixed_html + `
+    <table class="line-table mt-12">
+      <thead><tr><th>SKU quà</th><th>Tên</th><th class="num">GV/SP</th><th class="num">SL tặng</th><th class="num">GV quà tổng</th></tr></thead>
+      <tbody id="gift_body"></tbody>
+    </table>
+  `;
+  const body = document.getElementById('gift_body');
+  Array.from(gift_skus).forEach(skuId => {
+    const s = skuById(skuId);
+    if (!s) return;
+    const existing = state.qua_user.find(q => q.sku === skuId);
+    const sl = existing ? existing.sl : 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code style="background:var(--bg-soft); padding:2px 6px; border-radius:4px; font-size:11px;">${s.sku}</code></td>
+      <td style="font-size:12px;">${s.ten}</td>
+      <td class="num font-mono">${fmtNum(s.gv)}</td>
+      <td class="num"><input type="number" class="qty gift-qty" min="0" value="${sl}" data-sku="${skuId}"></td>
+      <td class="num font-mono">${fmtNum(s.gv * sl)}</td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input.gift-qty').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const sku = e.target.dataset.sku;
+      const sl = parseInt(e.target.value) || 0;
+      let q = state.qua_user.find(x => x.sku === sku);
+      if (q) q.sl = sl;
+      else state.qua_user.push({ sku, sl });
+      state.qua_user = state.qua_user.filter(x => x.sl > 0);
+      refresh();
+    });
+  });
+}
+
+function refresh() {
+  renderLines();
+  renderGiftPanel();
+  if (!state.ct_id || !state.nhom) {
+    document.getElementById('pnl_tier').textContent = 'Chưa đủ bậc';
+    document.getElementById('pnl_status').textContent = 'Chưa có đơn';
+    document.getElementById('pnl_status').className = 'pnl-status fail';
+    ['pnl_ny','pnl_ck','pnl_thuc','pnl_cogs','pnl_nv','pnl_vh','pnl_qua','pnl_ln'].forEach(id => {
+      document.getElementById(id).textContent = '0';
+    });
+    return;
+  }
+  const p = calcPnL(state);
+  document.getElementById('pnl_ny').textContent = fmtMoney(p.dt_ny);
+  document.getElementById('pnl_ck').textContent = fmtMoney(-p.ck_kh_amount);
+  document.getElementById('pnl_thuc').textContent = fmtMoney(p.dt_thuc);
+  document.getElementById('pnl_cogs').textContent = fmtMoney(-p.cogs);
+  document.getElementById('pnl_nv').textContent = fmtMoney(-p.ck_nv);
+  document.getElementById('pnl_vh').textContent = fmtMoney(-p.van_hanh);
+  document.getElementById('pnl_qua').textContent = fmtMoney(-p.gv_qua);
+  document.getElementById('pnl_ln').textContent = `${fmtMoney(p.ln_thuan)} (${fmtPct(p.pct_ln_ny)})`;
+  document.getElementById('pnl_tier').textContent = p.tier ? `${p.tier.ten} — ${p.tier.qua_text}` : 'Chưa đủ bậc';
+  const s = tierStatus(p.pct_ln_ny);
+  const st = document.getElementById('pnl_status');
+  st.textContent = s.text;
+  st.className = `pnl-status ${s.cls}`;
+  document.getElementById('btn_preview').disabled = !(p.dt_ny > 0);
+  // Cập nhật thành tiền per line
+  p.lines.forEach(l => {
+    const el = document.getElementById(`tt_${l.sku}`);
+    if (el) el.textContent = fmtNum(l.thanh_tien);
+  });
+}
+
+document.getElementById('btn_preview').addEventListener('click', () => {
+  const p = calcPnL(state);
+  openQuotePreview(state, p);
+});
+document.getElementById('btn_save').addEventListener('click', () => {
+  alert('Chức năng lưu Lark Base sẽ bật ở Pha B (sắp tới).');
+});
+
+function openQuotePreview(s, p) {
+  const w = window.open('', '_blank');
+  const now = new Date().toLocaleDateString('vi-VN');
+  const linesHtml = p.lines.map(l => `
+    <tr>
+      <td>${l.sku}</td>
+      <td>${l.ten}</td>
+      <td class="num">${fmtNum(l.gia_ny)}</td>
+      <td class="num">${fmtNum(l.gia_sau_ck)}</td>
+      <td class="num">${l.sl}</td>
+      <td class="num"><b>${fmtNum(l.thanh_tien)}</b></td>
+    </tr>`).join('');
+  const giftHtml = (s.qua_user || []).map(q => {
+    const sku = skuById(q.sku);
+    return `<tr><td>${sku.sku}</td><td>${sku.ten}</td><td class="num">${q.sl}</td></tr>`;
+  }).join('');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Báo giá — ${s.kh_ten || 'KH'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Inter',sans-serif;padding:40px;color:#0F1B3D;max-width:800px;margin:0 auto;}
+h1{color:#1E3A8A;font-size:28px;margin-bottom:4px;}
+.hdr{border-bottom:3px solid #1E3A8A;padding-bottom:16px;margin-bottom:24px;}
+.hdr .star{color:#F5C518;}
+.meta{display:flex;justify-content:space-between;margin-bottom:20px;font-size:13px;}
+.meta b{color:#1E3A8A;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;}
+th{background:#1E3A8A;color:#fff;padding:10px;text-align:left;font-size:12px;}
+th.num,td.num{text-align:right;}
+td{padding:8px 10px;border-bottom:1px solid #E4E7EE;}
+.total-box{background:#F5F6FA;padding:16px;border-radius:8px;margin:20px 0;}
+.total-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
+.total-row.final{font-size:18px;font-weight:700;color:#1E3A8A;border-top:2px solid #1E3A8A;margin-top:10px;padding-top:10px;}
+.gift-box{background:#FFFBEB;padding:16px;border-radius:8px;border-left:4px solid #F5C518;margin-top:20px;}
+.footer-note{margin-top:30px;font-size:12px;color:#8B93A7;border-top:1px solid #E4E7EE;padding-top:16px;}
+@media print{@page{margin:10mm;}}
+</style></head><body>
+<div class="hdr">
+  <h1>30<span class="star">★</span>SHINE B2B — BÁO GIÁ</h1>
+  <div style="color:#555;font-size:13px;">Khối Thương mại · Chính sách T4/2026</div>
+</div>
+<div class="meta">
+  <div>Khách hàng: <b>${s.kh_ten || '—'}</b><br>SĐT: ${s.kh_sdt || '—'}<br>Nhóm: <b>${s.nhom}</b></div>
+  <div style="text-align:right;">Chương trình: <b>${p.ct_name}</b><br>Ngày báo: <b>${now}</b><br>Sale: ${s.sale_name || '—'}</div>
+</div>
+<h3 style="color:#1E3A8A;margin-bottom:10px;">PHẦN KHÁCH TRẢ TIỀN (CK ${fmtPct(p.ck_kh)})</h3>
+<table>
+  <thead><tr><th>SKU</th><th>Tên SP</th><th class="num">Giá NY</th><th class="num">Giá sau CK</th><th class="num">SL</th><th class="num">Thành tiền</th></tr></thead>
+  <tbody>${linesHtml}</tbody>
+</table>
+<div class="total-box">
+  <div class="total-row"><span>Tổng giá niêm yết</span><b>${fmtMoney(p.dt_ny)}</b></div>
+  <div class="total-row"><span>Chiết khấu B2B (${fmtPct(p.ck_kh)})</span><b style="color:#DC2626;">−${fmtMoney(p.ck_kh_amount)}</b></div>
+  <div class="total-row final"><span>KHÁCH THANH TOÁN</span><b>${fmtMoney(p.dt_thuc)}</b></div>
+</div>
+${giftHtml ? `<div class="gift-box">
+  <h3 style="color:#92400E;margin-bottom:10px;">🎁 QUÀ TẶNG KÈM (${p.tier ? p.tier.ten : '—'})</h3>
+  <table><thead><tr><th>SKU</th><th>Tên</th><th class="num">SL</th></tr></thead><tbody>${giftHtml}</tbody></table>
+</div>` : ''}
+<div class="footer-note">
+  ✓ Áp dụng 01-30/04/2026 · Chốt đơn trước 25/04 · Thanh toán 100% khi nhận hàng<br>
+  ✓ Hàng tặng tách phiếu xuất riêng, ghi "HÀNG TẶNG 0đ"<br>
+  ✓ Bảng giá và quà tặng theo chính sách chính thức của 30Shine T4/2026
+</div>
+<div style="margin-top:20px;text-align:right;"><button onclick="window.print()" style="background:#F5C518;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;">🖨️ In / Lưu PDF</button></div>
+</body></html>`);
+  w.document.close();
+}
+
+refresh();
+</script>
+</body>
+</html>
