@@ -84,6 +84,39 @@ td input, td select {
   font-size: 13px; font-family: var(--font); width: 100%;
 }
 td input.num { text-align: right; }
+
+/* Nhóm KH badges */
+.nh-N1 { background:#D4A017; color:#000; }
+.nh-N2 { background:#15397F; color:#fff; }
+.nh-N3 { background:#225CCC; color:#fff; }
+.nh-N4 { background:#1A8754; color:#fff; }
+.nh-N5 { background:#6B7280; color:#fff; }
+.nh-NQ { background:#7C3AED; color:#fff; }
+.nh { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; }
+
+.promo-badge {
+  display:inline-block; margin-left:6px; background:#DC2626; color:#fff;
+  font-size:10px; font-weight:700; padding:1px 6px; border-radius:10px;
+  min-width:16px; text-align:center;
+}
+.promo-card {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1px solid #F59E0B; border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-bottom: 10px;
+  display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+}
+.promo-card .info b { color: var(--primary-dark); }
+.promo-card .meta { font-size: 12px; color: #92400E; margin-top: 4px; }
+.promo-actions { display: flex; gap: 8px; }
+.promo-actions .btn-sm { font-size: 12px; padding: 6px 12px; }
+
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.filter-bar select {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px;
+}
 </style>
 </head>
 <body>
@@ -123,6 +156,7 @@ td input.num { text-align: right; }
       <h4>Quản trị</h4>
       <nav class="admin-nav">
         <a href="#users" data-section="users" class="active">👥 Người dùng</a>
+        <a href="#customers" data-section="customers">🏪 Khách hàng <span id="promo_badge" class="promo-badge" style="display:none;">0</span></a>
         <a href="#master" data-section="master">💎 Master giá</a>
         <a href="#groups" data-section="groups">📊 CK nhóm KH</a>
         <a href="#orders" data-section="orders">📋 Tất cả đơn</a>
@@ -142,6 +176,55 @@ td input.num { text-align: right; }
           <table>
             <thead><tr><th>Email</th><th>Họ tên</th><th class="center">Role</th><th class="center">Active</th><th>Ghi chú</th><th></th></tr></thead>
             <tbody id="users_body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Customers -->
+      <section class="admin-section" id="sec-customers">
+        <h2>Quản lý khách hàng</h2>
+        <p class="desc">Danh bạ KH B2B — dùng cho dropdown khi tạo đơn. Cho phép <b>override CK theo brand</b> nếu KH có chính sách riêng.</p>
+
+        <!-- Promotion alerts -->
+        <div id="promo_section" style="display:none; margin-bottom: 20px;">
+          <h3 style="font-size:15px; color:#92400E; margin-bottom:10px;">
+            🔔 KH đủ điều kiện <b>LÊN BẬC</b> — cần xem xét duyệt
+          </h3>
+          <div id="promo_list"></div>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" class="search-input" id="cust_search" placeholder="🔍 Tên KH / SĐT / Mã KH...">
+          <select id="cust_filter_nhom">
+            <option value="">— Nhóm (tất cả) —</option>
+            <option>N1</option><option>N2</option><option>N3</option>
+            <option>N4</option><option>N5</option><option>NQ</option>
+          </select>
+          <select id="cust_filter_kv">
+            <option value="">— Khu vực —</option>
+            <option>HN</option><option>HCM</option><option>Tỉnh khác</option>
+          </select>
+          <select id="cust_filter_loai">
+            <option value="">— Loại hình —</option>
+            <option>Salon/Barber</option><option>Chuỗi</option>
+            <option>NPP/Đại lý</option><option>Ecom</option>
+            <option>Spa</option><option>Cá nhân</option><option>Khác</option>
+          </select>
+          <span id="cust_count" style="color:var(--text-muted); font-size:13px; align-self:center;"></span>
+          <button class="btn btn-primary btn-sm" id="btn_add_cust" style="margin-left:auto;">+ Thêm KH</button>
+        </div>
+
+        <div class="table-wrap" style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>Mã KH</th><th>Tên KH</th><th class="center">Nhóm</th>
+              <th>Khu vực</th><th>Loại hình</th>
+              <th>SĐT</th><th>Sale</th>
+              <th class="num">DT YTD</th><th class="center">Đơn</th>
+              <th class="num">CK Glz</th><th class="num">CK Lab</th>
+              <th class="center">Active</th><th></th>
+            </tr></thead>
+            <tbody id="cust_body"></tbody>
           </table>
         </div>
       </section>
@@ -225,6 +308,114 @@ td input.num { text-align: right; }
   </div>
 </div>
 
+<!-- Customer modal -->
+<div class="modal" id="custModal">
+  <div class="modal-body" style="max-width: 720px;">
+    <h3 id="custModalTitle">Thêm khách hàng</h3>
+    <div class="form-grid form-grid-2">
+      <div>
+        <label class="form-label">Mã KH *</label>
+        <input type="text" class="form-input" id="c_ma" placeholder="VD: MaKH_100">
+        <div class="form-help">Mã duy nhất (VD MaKH_001) — không trùng KH khác</div>
+      </div>
+      <div>
+        <label class="form-label">Tên KH *</label>
+        <input type="text" class="form-input" id="c_ten" placeholder="VD: Minh Tài Shop">
+      </div>
+      <div>
+        <label class="form-label">SĐT</label>
+        <input type="text" class="form-input" id="c_sdt">
+      </div>
+      <div>
+        <label class="form-label">Khu vực</label>
+        <select class="form-select" id="c_kv">
+          <option>HN</option><option>HCM</option><option>Tỉnh khác</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Nhóm KH *</label>
+        <select class="form-select" id="c_nhom">
+          <option value="N1">N1 — VIP</option>
+          <option value="N2">N2 — Chuỗi / Ecom</option>
+          <option value="N3">N3 — NPP vùng</option>
+          <option value="N4">N4 — Salon lớn</option>
+          <option value="N5" selected>N5 — Salon chuẩn/lẻ</option>
+          <option value="NQ">NQ — Nhượng quyền 30Shine</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Loại hình</label>
+        <select class="form-select" id="c_loai">
+          <option>Salon/Barber</option><option>Chuỗi</option>
+          <option>NPP/Đại lý</option><option>Ecom</option>
+          <option>Spa</option><option>Cá nhân</option><option>Khác</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Sale phụ trách</label>
+        <input type="text" class="form-input" id="c_sale">
+      </div>
+      <div>
+        <label class="form-label">Tên đặt chuẩn (xuất HĐ)</label>
+        <input type="text" class="form-input" id="c_ten_chuan">
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="form-label">Địa chỉ giao hàng</label>
+        <input type="text" class="form-input" id="c_dc1" placeholder="Số nhà, đường, phường, quận, tỉnh">
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="form-label">Địa chỉ giao hàng 2 (nếu có)</label>
+        <input type="text" class="form-input" id="c_dc2">
+      </div>
+      <div>
+        <label class="form-label">Mã số thuế</label>
+        <input type="text" class="form-input" id="c_mst">
+      </div>
+      <div>
+        <label class="form-label">Thông tin xuất HĐ</label>
+        <input type="text" class="form-input" id="c_hd" placeholder="Tên công ty / địa chỉ ghi HĐ">
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; padding:14px; background: #FFF9E6; border-radius: 8px; border-left: 4px solid #D4A017;">
+      <h4 style="font-size:13px; color:#92400E; margin-bottom:8px;">⚙️ CK OVERRIDE (để trống = theo chuẩn nhóm)</h4>
+      <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <div>
+          <label class="form-label" style="font-size:11px;">Glanzen (0-1)</label>
+          <input type="number" step="0.01" min="0" max="1" class="form-input" id="c_ck_g" placeholder="VD: 0.65">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px;">Laborie (0-1)</label>
+          <input type="number" step="0.01" min="0" max="1" class="form-input" id="c_ck_l" placeholder="VD: 0.40">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px;">Dr.FS (0-1)</label>
+          <input type="number" step="0.01" min="0" max="1" class="form-input" id="c_ck_d" placeholder="VD: 0.50">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid" style="grid-template-columns: 1fr auto; margin-top: 16px;">
+      <div>
+        <label class="form-label">Ghi chú</label>
+        <input type="text" class="form-input" id="c_note">
+      </div>
+      <div style="align-self:end; padding-bottom:8px;">
+        <label style="display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="c_active" checked> Active
+        </label>
+      </div>
+    </div>
+
+    <div id="cust_ytd_info" style="margin-top: 14px; padding: 10px 14px; background: var(--bg-soft); border-radius: 6px; font-size: 13px; color: var(--text-soft); display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeCustModal()">Huỷ</button>
+      <button class="btn btn-primary btn-sm" id="c_save">Lưu</button>
+    </div>
+  </div>
+</div>
+
 <!-- Master modal -->
 <div class="modal" id="masterModal">
   <div class="modal-body">
@@ -283,7 +474,7 @@ function getField(f, key) {
   return v;
 }
 
-let USERS = [], MASTER = [];
+let USERS = [], MASTER = [], CUSTOMERS = [], PROMOTIONS = [];
 
 async function init() {
   const me = await apiMe();
@@ -302,8 +493,199 @@ async function init() {
 
   await loadUsers();
   await loadMaster();
+  await loadCustomers();
+  await loadPromotions();
   renderGroups();
 }
+
+// ========== Customers ==========
+async function loadCustomers() {
+  CUSTOMERS = await apiListCustomers();
+  renderCustomers();
+}
+async function loadPromotions() {
+  PROMOTIONS = await apiListPromotions();
+  const badge = document.getElementById('promo_badge');
+  const pending = PROMOTIONS.length;
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+  renderPromotions();
+}
+
+function pickStr(v) {
+  if (v === undefined || v === null) return '';
+  if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (v.text) return v.text;
+  if (Array.isArray(v) && v[0]?.text) return v[0].text;
+  return String(v);
+}
+
+function renderCustomers() {
+  const q  = (document.getElementById('cust_search').value || '').toLowerCase();
+  const fn = document.getElementById('cust_filter_nhom').value;
+  const fk = document.getElementById('cust_filter_kv').value;
+  const fl = document.getElementById('cust_filter_loai').value;
+
+  const list = CUSTOMERS.filter(c => {
+    if (q) {
+      const hay = (pickStr(c['Tên KH']) + pickStr(c['SĐT']) + pickStr(c['Mã KH'])).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (fn && pickStr(c['Nhóm KH']) !== fn) return false;
+    if (fk && pickStr(c['Khu vực']) !== fk) return false;
+    if (fl && pickStr(c['Loại hình']) !== fl) return false;
+    return true;
+  });
+
+  document.getElementById('cust_count').textContent = `${list.length} / ${CUSTOMERS.length} KH`;
+
+  document.getElementById('cust_body').innerHTML = list.map(c => {
+    const nhom = pickStr(c['Nhóm KH']) || '—';
+    const dt   = c['DT NY YTD'] || 0;
+    const sodon= c['Số đơn YTD'] || 0;
+    const ckG  = c['CK Glanzen (override)'];
+    const ckL  = c['CK Laborie (override)'];
+    return `<tr>
+      <td><code style="font-size:11px;">${pickStr(c['Mã KH'])}</code></td>
+      <td><b>${pickStr(c['Tên KH'])}</b></td>
+      <td class="center"><span class="nh nh-${nhom}">${nhom}</span></td>
+      <td>${pickStr(c['Khu vực'])}</td>
+      <td><span class="text-muted" style="font-size:12px;">${pickStr(c['Loại hình'])}</span></td>
+      <td style="font-size:12px;">${pickStr(c['SĐT'])}</td>
+      <td style="font-size:12px;">${pickStr(c['Sale phụ trách'])}</td>
+      <td class="num font-mono">${fmtNum(dt)}</td>
+      <td class="center">${sodon}</td>
+      <td class="num font-mono">${ckG ? fmtPct(ckG) : '<span class="text-muted">—</span>'}</td>
+      <td class="num font-mono">${ckL ? fmtPct(ckL) : '<span class="text-muted">—</span>'}</td>
+      <td class="center">${c['Active'] ? '✅' : '⛔'}</td>
+      <td class="center" style="white-space:nowrap;">
+        <button class="edit-btn" data-action="edit-cust" data-id="${c.record_id}">Sửa</button>
+        <button class="del-btn" data-action="del-cust" data-id="${c.record_id}">Xoá</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="13" style="padding:40px; text-align:center; color:var(--text-muted);">Chưa có KH nào khớp filter</td></tr>';
+}
+
+function renderPromotions() {
+  const wrap = document.getElementById('promo_section');
+  const list = document.getElementById('promo_list');
+  if (!PROMOTIONS.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  list.innerHTML = PROMOTIONS.map(p => `
+    <div class="promo-card">
+      <div class="info">
+        <b>${p.ten_kh}</b> <code style="font-size:11px;">(${p.ma_kh})</code>
+        — Đề xuất: <span class="nh nh-${p.nhom_hien_tai}">${p.nhom_hien_tai}</span>
+        <span style="margin:0 6px; color:var(--text-muted);">→</span>
+        <span class="nh nh-${p.nhom_de_xuat}">${p.nhom_de_xuat}</span>
+        <div class="meta">
+          DT NY YTD: <b>${fmtNum(p.dt_ny_ytd)}đ</b>
+          · DT Thực: ${fmtNum(p.dt_thuc_ytd)}đ
+          · ${p.so_don} đơn / ${p.so_thang} tháng
+          · CK TB ${p.pct_ck_avg}%
+          ${p.sale ? ' · Sale: ' + p.sale : ''}
+        </div>
+      </div>
+      <div class="promo-actions">
+        <button class="btn btn-success btn-sm" data-action="approve-promo"
+                data-id="${p.record_id}" data-nhom="${p.nhom_de_xuat}">✅ Duyệt lên ${p.nhom_de_xuat}</button>
+        <button class="btn btn-outline btn-sm" data-action="edit-cust" data-id="${p.record_id}">Xem KH</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editingCustId = null;
+function openCustModal(cust = null) {
+  editingCustId = cust ? cust.record_id : null;
+  document.getElementById('custModalTitle').textContent = cust ? 'Sửa khách hàng' : 'Thêm khách hàng mới';
+  const setv = (id, v) => document.getElementById(id).value = v || '';
+
+  if (cust) {
+    setv('c_ma', pickStr(cust['Mã KH']));
+    setv('c_ten', pickStr(cust['Tên KH']));
+    setv('c_sdt', pickStr(cust['SĐT']));
+    setv('c_kv',  pickStr(cust['Khu vực']) || 'HN');
+    setv('c_nhom', pickStr(cust['Nhóm KH']) || 'N5');
+    setv('c_loai', pickStr(cust['Loại hình']) || 'Salon/Barber');
+    setv('c_sale', pickStr(cust['Sale phụ trách']));
+    setv('c_ten_chuan', pickStr(cust['Tên đặt chuẩn']));
+    setv('c_dc1',  pickStr(cust['Địa chỉ giao hàng']));
+    setv('c_dc2',  pickStr(cust['Địa chỉ giao 2']));
+    setv('c_mst',  pickStr(cust['Mã số thuế']));
+    setv('c_hd',   pickStr(cust['Thông tin xuất HĐ']));
+    setv('c_ck_g', cust['CK Glanzen (override)'] || '');
+    setv('c_ck_l', cust['CK Laborie (override)'] || '');
+    setv('c_ck_d', cust['CK Dr.FS (override)']   || '');
+    setv('c_note', pickStr(cust['Ghi chú']));
+    document.getElementById('c_active').checked = !!cust['Active'];
+
+    // YTD info
+    const info = document.getElementById('cust_ytd_info');
+    const dt = cust['DT NY YTD'] || 0, dt_thuc = cust['DT Thực YTD'] || 0;
+    const sodon = cust['Số đơn YTD'] || 0, thang = cust['Số tháng mua'] || 0;
+    info.innerHTML = `<b>📈 DT tích luỹ YTD:</b> Niêm yết <b>${fmtNum(dt)}đ</b>
+      · Thực thu ${fmtNum(dt_thuc)}đ · ${sodon} đơn / ${thang} tháng
+      · Mua gần nhất: ${pickStr(cust['Mua gần nhất']) || '—'}`;
+    info.style.display = 'block';
+  } else {
+    ['c_ma','c_ten','c_sdt','c_sale','c_ten_chuan','c_dc1','c_dc2',
+     'c_mst','c_hd','c_ck_g','c_ck_l','c_ck_d','c_note'].forEach(id => setv(id, ''));
+    setv('c_kv', 'HN'); setv('c_nhom', 'N5'); setv('c_loai', 'Salon/Barber');
+    document.getElementById('c_active').checked = true;
+    document.getElementById('cust_ytd_info').style.display = 'none';
+  }
+  document.getElementById('custModal').classList.add('open');
+}
+function closeCustModal() { document.getElementById('custModal').classList.remove('open'); }
+
+document.getElementById('btn_add_cust').addEventListener('click', () => openCustModal());
+document.getElementById('c_save').addEventListener('click', async () => {
+  const ma = document.getElementById('c_ma').value.trim();
+  const ten = document.getElementById('c_ten').value.trim();
+  if (!ma || !ten) { alert('Mã KH và Tên KH là bắt buộc'); return; }
+
+  const fields = {
+    'Mã KH': ma,
+    'Tên KH': ten,
+    'SĐT': document.getElementById('c_sdt').value.trim(),
+    'Khu vực': document.getElementById('c_kv').value,
+    'Nhóm KH': document.getElementById('c_nhom').value,
+    'Loại hình': document.getElementById('c_loai').value,
+    'Sale phụ trách': document.getElementById('c_sale').value.trim(),
+    'Tên đặt chuẩn': document.getElementById('c_ten_chuan').value.trim(),
+    'Địa chỉ giao hàng': document.getElementById('c_dc1').value.trim(),
+    'Địa chỉ giao 2':    document.getElementById('c_dc2').value.trim(),
+    'Mã số thuế': document.getElementById('c_mst').value.trim(),
+    'Thông tin xuất HĐ': document.getElementById('c_hd').value.trim(),
+    'Ghi chú': document.getElementById('c_note').value.trim(),
+    'Active': document.getElementById('c_active').checked,
+  };
+  const ckG = parseFloat(document.getElementById('c_ck_g').value);
+  const ckL = parseFloat(document.getElementById('c_ck_l').value);
+  const ckD = parseFloat(document.getElementById('c_ck_d').value);
+  if (!isNaN(ckG)) fields['CK Glanzen (override)'] = ckG;
+  if (!isNaN(ckL)) fields['CK Laborie (override)'] = ckL;
+  if (!isNaN(ckD)) fields['CK Dr.FS (override)']   = ckD;
+
+  let r;
+  if (editingCustId) r = await apiUpdateCustomer(editingCustId, fields);
+  else r = await apiCreateCustomer(fields);
+  if (r.code === 0) { closeCustModal(); await loadCustomers(); await loadPromotions(); }
+  else alert('Lỗi: ' + JSON.stringify(r).slice(0, 300));
+});
+
+['cust_search','cust_filter_nhom','cust_filter_kv','cust_filter_loai'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderCustomers);
+  document.getElementById(id).addEventListener('change', renderCustomers);
+});
 
 async function loadUsers() {
   USERS = await apiListUsers();
@@ -479,6 +861,17 @@ document.addEventListener('click', async e => {
   else if (action === 'del-master') {
     if (!confirm('Xoá SKU này?')) return;
     await apiDeleteMaster(id); await loadMaster();
+  } else if (action === 'edit-cust') openCustModal(CUSTOMERS.find(c => c.record_id === id));
+  else if (action === 'del-cust') {
+    if (!confirm('Xoá KH này? (dữ liệu đơn cũ không bị xoá)')) return;
+    await apiDeleteCustomer(id); await loadCustomers(); await loadPromotions();
+  } else if (action === 'approve-promo') {
+    const nhom = btn.dataset.nhom;
+    if (!confirm(`Duyệt lên ${nhom} cho KH này?`)) return;
+    btn.disabled = true; btn.textContent = '⏳ Đang duyệt...';
+    const r = await apiApprovePromotion(id, nhom);
+    if (r.code === 0) { await loadCustomers(); await loadPromotions(); }
+    else alert('Lỗi: ' + JSON.stringify(r).slice(0,200));
   }
 });
 

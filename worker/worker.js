@@ -8,12 +8,13 @@
  *   LARK_APP_ID, LARK_APP_SECRET, SESSION_SECRET
  *
  * Env vars (plain):
- *   BASE_TOKEN = OxKQbdhtuaoF1xssJjxlClBLgkc
- *   TBL_USERS  = tblxrn5eM82mwbji
- *   TBL_MASTER = tblFXOMf6rEZ6Bj0
- *   TBL_ORDERS = tbliaoGSVMsnr6tI
- *   TBL_LINES  = tblPbSZyadpk6dFG
- *   SITE_ORIGIN = https://ngcaolac2309-sys.github.io
+ *   BASE_TOKEN     = OxKQbdhtuaoF1xssJjxlClBLgkc
+ *   TBL_USERS      = tblxrn5eM82mwbji
+ *   TBL_MASTER     = tblFXOMf6rEZ6Bj0
+ *   TBL_ORDERS     = tbliaoGSVMsnr6tI
+ *   TBL_LINES      = tblPbSZyadpk6dFG
+ *   TBL_CUSTOMERS  = tblEjS2mRdt4pn1E
+ *   SITE_ORIGIN    = https://ngcaolac2309-sys.github.io
  *   SITE_BASE_PATH = /b2b-30shine
  */
 
@@ -377,6 +378,96 @@ async function deleteUser(env, recordId) {
     { method: 'DELETE' });
 }
 
+// ========== Customers CRUD ==========
+async function listCustomers(env) {
+  const r = await larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_CUSTOMERS}/records?page_size=500`);
+  return (r?.data?.items || []).map(it => ({ record_id: it.record_id, ...it.fields }));
+}
+async function createCustomer(env, fields) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_CUSTOMERS}/records`,
+    { method: 'POST', body: JSON.stringify({ fields }) });
+}
+async function updateCustomer(env, recordId, patch) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_CUSTOMERS}/records/${recordId}`,
+    { method: 'PUT', body: JSON.stringify({ fields: patch }) });
+}
+async function deleteCustomer(env, recordId) {
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_CUSTOMERS}/records/${recordId}`,
+    { method: 'DELETE' });
+}
+
+// ========== Promotion logic ==========
+// Ngưỡng DT NY (VND) gợi ý lên nhóm — bám theo kết quả phân loại 2025
+const PROMO_THRESHOLDS = {
+  N5: { upTo: 'N4', minDt: 50_000_000, minDon: 2 },
+  N4: { upTo: 'N3', minDt: 200_000_000, minDon: 5, minCkAvg: 0.38 },
+  N3: { upTo: 'N2', minDt: 500_000_000, minDon: 5, minCkAvg: 0.40 },
+  N2: { upTo: 'N1', minDt: 1_000_000_000, minMonths: 6 },
+};
+
+function pickGroup(f) {
+  const v = f['Nhóm KH'];
+  if (typeof v === 'string') return v;
+  if (v?.text) return v.text;
+  if (Array.isArray(v) && v[0]?.text) return v[0].text;
+  return '';
+}
+
+async function listPromotions(env) {
+  // Trả về danh sách KH đủ điều kiện lên bậc (đề xuất vs nhóm hiện tại)
+  const custs = await listCustomers(env);
+  const suggestions = [];
+  for (const c of custs) {
+    const cur = pickGroup(c);
+    const dt = Number(c['DT NY YTD'] || 0);
+    const sodon = Number(c['Số đơn YTD'] || 0);
+    const months = Number(c['Số tháng mua'] || 0);
+    const dt_thuc = Number(c['DT Thực YTD'] || 0);
+    const ckAvg = dt > 0 ? (dt - dt_thuc) / dt : 0;
+
+    const rule = PROMO_THRESHOLDS[cur];
+    if (!rule) continue;
+    const ok =
+      dt >= rule.minDt &&
+      (!rule.minDon   || sodon  >= rule.minDon) &&
+      (!rule.minMonths|| months >= rule.minMonths) &&
+      (!rule.minCkAvg || ckAvg  >= rule.minCkAvg);
+    if (!ok) continue;
+
+    suggestions.push({
+      record_id: c.record_id,
+      ma_kh: c['Mã KH'] || '',
+      ten_kh: c['Tên KH'] || '',
+      sdt: c['SĐT'] || '',
+      khu_vuc: (typeof c['Khu vực'] === 'object' ? c['Khu vực']?.text : c['Khu vực']) || '',
+      sale: c['Sale phụ trách'] || '',
+      nhom_hien_tai: cur,
+      nhom_de_xuat: rule.upTo,
+      dt_ny_ytd: dt,
+      dt_thuc_ytd: dt_thuc,
+      so_don: sodon,
+      so_thang: months,
+      pct_ck_avg: Math.round(ckAvg * 1000) / 10,
+      cho_duyet: !!c['Chờ duyệt lên bậc'],
+    });
+  }
+  // Sort: lớn hơn lên trước
+  suggestions.sort((a, b) => b.dt_ny_ytd - a.dt_ny_ytd);
+  return suggestions;
+}
+
+async function approvePromotion(env, recordId, newGroup) {
+  return updateCustomer(env, recordId, {
+    'Nhóm KH': newGroup,
+    'Chờ duyệt lên bậc': false,
+    'Nhóm đề xuất': newGroup,
+  });
+}
+
 // ========== Router ==========
 export default {
   async fetch(req, env) {
@@ -502,6 +593,46 @@ export default {
       if (mLines && req.method === 'GET') {
         const lines = await getOrderLines(env, mLines[1]);
         return json({ data: lines }, 200, cors);
+      }
+
+      // ─── Customers: ai cũng xem được (sale dùng để tạo đơn, admin quản lý)
+      if (url.pathname === '/api/customers' && req.method === 'GET') {
+        const list = await listCustomers(env);
+        return json({ data: list }, 200, cors);
+      }
+      // Admin: CRUD Customers
+      if (url.pathname === '/api/customers' && req.method === 'POST') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await createCustomer(env, body.fields);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      const mCust = url.pathname.match(/^\/api\/customers\/([^\/]+)$/);
+      if (mCust && req.method === 'PATCH') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        const r = await updateCustomer(env, mCust[1], body);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      if (mCust && req.method === 'DELETE') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const r = await deleteCustomer(env, mCust[1]);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+
+      // Promotions: KH đạt ngưỡng lên bậc
+      if (url.pathname === '/api/customers/promotions' && req.method === 'GET') {
+        const list = await listPromotions(env);
+        return json({ data: list }, 200, cors);
+      }
+      // Admin duyệt lên bậc
+      const mApprove = url.pathname.match(/^\/api\/customers\/([^\/]+)\/approve-promotion$/);
+      if (mApprove && req.method === 'POST') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const body = await req.json();
+        if (!body.nhom) return json({ err: 'missing_nhom' }, 400, cors);
+        const r = await approvePromotion(env, mApprove[1], body.nhom);
+        return json(r, r.code === 0 ? 200 : 500, cors);
       }
 
       return json({ err: 'not_found', path: url.pathname }, 404, cors);

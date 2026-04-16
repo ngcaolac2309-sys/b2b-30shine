@@ -15,6 +15,7 @@
 | `TBL_MASTER` | `tblFXOMf6rEZ6Bj0` |
 | `TBL_ORDERS` | `tbliaoGSVMsnr6tI` |
 | `TBL_LINES` | `tblPbSZyadpk6dFG` |
+| `TBL_CUSTOMERS` | `tblEjS2mRdt4pn1E` |
 | `SITE_ORIGIN` | `https://ngcaolac2309-sys.github.io` |
 | `SITE_BASE_PATH` | `/b2b-30shine` |
 

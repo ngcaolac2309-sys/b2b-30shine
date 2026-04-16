@@ -57,6 +57,29 @@ async function apiDeleteMaster(recordId) {
   return apiFetch(`/api/master/${recordId}`, { method: 'DELETE' });
 }
 
+// ----- Customers -----
+async function apiListCustomers() {
+  const r = await apiFetch('/api/customers');
+  return r._unauth ? [] : (r.data || []);
+}
+async function apiCreateCustomer(fields) {
+  return apiFetch('/api/customers', { method: 'POST', body: JSON.stringify({ fields }) });
+}
+async function apiUpdateCustomer(recordId, patch) {
+  return apiFetch(`/api/customers/${recordId}`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+async function apiDeleteCustomer(recordId) {
+  return apiFetch(`/api/customers/${recordId}`, { method: 'DELETE' });
+}
+async function apiListPromotions() {
+  const r = await apiFetch('/api/customers/promotions');
+  return r._unauth || r.err ? [] : (r.data || []);
+}
+async function apiApprovePromotion(recordId, nhom) {
+  return apiFetch(`/api/customers/${recordId}/approve-promotion`,
+    { method: 'POST', body: JSON.stringify({ nhom }) });
+}
+
 // ----- Users -----
 async function apiListUsers() {
   const r = await apiFetch('/api/users');

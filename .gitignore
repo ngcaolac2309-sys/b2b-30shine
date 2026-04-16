@@ -1,0 +1,10 @@
+# Data nhạy cảm: SĐT/DT khách hàng — KHÔNG push lên repo public
+phan_loai_kh/
+
+# Backup/tạm
+*.bak
+*.tmp
+*.pyc
+__pycache__/
+.venv/
+venv/

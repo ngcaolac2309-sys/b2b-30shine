@@ -59,6 +59,57 @@ body.auth-ok { visibility: visible; }
 .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 14px; }
 .alert-info { background: #DBEAFE; color: #1E40AF; border-left: 4px solid var(--primary); }
 .alert-warn { background: #FEF3C7; color: #92400E; border-left: 4px solid var(--warn); }
+
+/* KH selector */
+.kh-autocomplete { position: relative; }
+.kh-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  max-height: 320px; overflow-y: auto; background: #fff;
+  border: 1px solid var(--border); border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border-top: none; box-shadow: var(--shadow-md);
+  display: none;
+}
+.kh-dropdown.open { display: block; }
+.kh-item {
+  padding: 10px 14px; border-bottom: 1px solid var(--border-light);
+  cursor: pointer; transition: background 0.1s;
+}
+.kh-item:hover, .kh-item.hover { background: #EFF6FF; }
+.kh-item .top { display: flex; justify-content: space-between; align-items: center; }
+.kh-item .name { font-weight: 600; color: var(--primary-dark); font-size: 14px; }
+.kh-item .nh {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+}
+.nh-N1 { background:#D4A017; color:#000; }
+.nh-N2 { background:#15397F; color:#fff; }
+.nh-N3 { background:#225CCC; color:#fff; }
+.nh-N4 { background:#1A8754; color:#fff; }
+.nh-N5 { background:#6B7280; color:#fff; }
+.nh-NQ { background:#7C3AED; color:#fff; }
+.kh-item .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.kh-empty { padding: 14px; color: var(--text-muted); text-align: center; font-size: 13px; }
+.kh-info-box {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 12px;
+  font-size: 13px; display: none;
+}
+.kh-info-box.show { display: block; }
+.kh-info-box .row { display: flex; justify-content: space-between; padding: 3px 0; }
+.kh-info-box .row b { color: var(--primary-dark); }
+.kh-info-box .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.kh-info-box .tag {
+  padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+}
+.kh-info-box .tag-override { background: #FEF3C7; color: #92400E; }
+.kh-info-box .tag-new { background: #DCFCE7; color: #14532D; }
+.kh-ytd-bar {
+  margin-top: 10px; background: #fff; border-radius: 6px; padding: 8px 12px;
+  font-size: 12px; color: var(--text-soft);
+  border-left: 3px solid var(--accent);
+}
+.kh-ytd-bar b { color: var(--primary-dark); }
 </style>
 </head>
 <body>
@@ -91,15 +142,28 @@ body.auth-ok { visibility: visible; }
     <!-- LEFT: Form -->
     <div>
       <div class="panel-card">
-        <h3><span class="step-num">1</span>Thông tin khách hàng</h3>
+        <h3><span class="step-num">1</span>Khách hàng</h3>
         <div class="form-grid form-grid-2">
+          <div style="grid-column: 1 / -1;">
+            <label class="form-label">Chọn khách hàng *</label>
+            <div class="kh-autocomplete">
+              <input type="text" class="form-input" id="kh_search" autocomplete="off"
+                     placeholder="🔍 Tìm theo tên / SĐT / Mã KH — hoặc bấm 'KH mới' bên dưới">
+              <div class="kh-dropdown" id="kh_dropdown"></div>
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+              <button type="button" class="btn btn-outline btn-sm" id="btn_kh_new">+ KH mới (chưa trong hệ thống)</button>
+              <span id="kh_selected_tag" style="font-size:13px; color:var(--success); font-weight:600;"></span>
+              <button type="button" class="btn btn-outline btn-sm" id="btn_kh_clear" style="display:none; margin-left:auto; font-size:12px;">✕ Bỏ chọn</button>
+            </div>
+          </div>
           <div>
-            <label class="form-label">Tên khách hàng *</label>
-            <input type="text" class="form-input" id="kh_ten" placeholder="VD: Công ty TNHH Minh Tài">
+            <label class="form-label">Tên KH *</label>
+            <input type="text" class="form-input" id="kh_ten" placeholder="Auto-fill khi chọn KH">
           </div>
           <div>
             <label class="form-label">Số điện thoại</label>
-            <input type="text" class="form-input" id="kh_sdt" placeholder="VD: 0909xxxxxx">
+            <input type="text" class="form-input" id="kh_sdt">
           </div>
           <div>
             <label class="form-label">Nhóm khách hàng *</label>
@@ -112,6 +176,15 @@ body.auth-ok { visibility: visible; }
             <label class="form-label">Sale phụ trách</label>
             <input type="text" class="form-input" id="sale_name" placeholder="Tên NV">
           </div>
+        </div>
+        <div class="kh-info-box" id="kh_info_box">
+          <div class="row"><span>🏪 <b>Mã KH:</b></span><span id="kh_i_ma">—</span></div>
+          <div class="row"><span>📍 <b>Địa chỉ giao:</b></span><span id="kh_i_dc">—</span></div>
+          <div class="row"><span>🧾 <b>MST / Info HĐ:</b></span><span id="kh_i_hd">—</span></div>
+          <div class="row"><span>🏷️ <b>Loại hình:</b></span><span id="kh_i_loai">—</span></div>
+          <div class="row"><span>👤 <b>Sale phụ trách:</b></span><span id="kh_i_sale">—</span></div>
+          <div class="badges" id="kh_i_badges"></div>
+          <div class="kh-ytd-bar" id="kh_i_ytd">—</div>
         </div>
       </div>
 
@@ -203,9 +276,21 @@ const state = {
   status: null,
   ct_id: null, nhom: null,
   kh_ten: '', kh_sdt: '', sale_name: '',
+  kh_cust: null,    // Customer record được chọn (từ dropdown)
+  ck_override: null,// {Glanzen, Laborie, 'Dr.FS'} nếu KH có CK riêng
   lines: [],   // [{sku, sl}]
   qua_user: [],
 };
+
+// Cache Customers + helpers
+let CUSTOMERS = [];
+function pickStr(v) {
+  if (v === undefined || v === null) return '';
+  if (typeof v === 'string' || typeof v === 'number') return String(v);
+  if (v.text) return v.text;
+  if (Array.isArray(v) && v[0]?.text) return v[0].text;
+  return String(v);
+}
 
 // Auth gate — redirect login nếu chưa xác thực
 let CURRENT_USER = null;
@@ -257,6 +342,17 @@ async function loadDraft() {
   document.getElementById('kh_sdt').value = state.kh_sdt;
   document.getElementById('kh_nhom').value = state.nhom;
   if (state.nhom) document.getElementById('nhom_desc').textContent = CK_GROUPS[state.nhom]?.mota || '';
+
+  // Auto-match Customer record nếu tên/SĐT trùng → load CK override + info
+  if (state.kh_ten || state.kh_sdt) {
+    const match = CUSTOMERS.find(c => {
+      const nm = pickStr(c['Tên KH']).toLowerCase();
+      const ph = pickStr(c['SĐT']);
+      return (state.kh_ten && nm && nm === state.kh_ten.toLowerCase()) ||
+             (state.kh_sdt && ph && ph === state.kh_sdt);
+    });
+    if (match) selectCustomer(match);
+  }
   if (state.ct_id) {
     const el = document.querySelector(`.ct-option[data-ct="${state.ct_id}"]`);
     if (el) el.click();
@@ -280,7 +376,160 @@ async function loadDraft() {
   }
 }
 
-initAuth().then(ok => { if (ok) loadDraft(); });
+initAuth().then(async ok => {
+  if (!ok) return;
+  // Load customers cho dropdown
+  CUSTOMERS = await apiListCustomers();
+  await loadDraft();
+});
+
+// ══════════ CUSTOMER AUTOCOMPLETE ══════════
+const khSearch   = document.getElementById('kh_search');
+const khDropdown = document.getElementById('kh_dropdown');
+const khInfoBox  = document.getElementById('kh_info_box');
+
+function renderKhDropdown(q) {
+  q = (q || '').toLowerCase().trim();
+  let list = CUSTOMERS.filter(c => c.Active);
+  if (q) {
+    list = list.filter(c => {
+      const hay = (pickStr(c['Tên KH']) + ' ' + pickStr(c['SĐT']) + ' ' + pickStr(c['Mã KH'])).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  list = list.slice(0, 20);
+  if (!list.length) {
+    khDropdown.innerHTML = '<div class="kh-empty">Không tìm thấy KH — bấm <b>+ KH mới</b> để tạo mới</div>';
+  } else {
+    khDropdown.innerHTML = list.map(c => {
+      const nhom = pickStr(c['Nhóm KH']) || 'N5';
+      return `<div class="kh-item" data-id="${c.record_id}">
+        <div class="top">
+          <span class="name">${pickStr(c['Tên KH'])}</span>
+          <span class="nh nh-${nhom}">${nhom}</span>
+        </div>
+        <div class="meta">
+          <code style="font-size:10px;">${pickStr(c['Mã KH'])}</code>
+          · ${pickStr(c['SĐT']) || 'chưa có SĐT'}
+          · ${pickStr(c['Khu vực'])} · ${pickStr(c['Loại hình'])}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  khDropdown.classList.add('open');
+}
+
+function closeKhDropdown() {
+  setTimeout(() => khDropdown.classList.remove('open'), 150);
+}
+
+khSearch.addEventListener('focus', () => renderKhDropdown(khSearch.value));
+khSearch.addEventListener('input', () => renderKhDropdown(khSearch.value));
+khSearch.addEventListener('blur', closeKhDropdown);
+khDropdown.addEventListener('mousedown', e => {
+  const item = e.target.closest('.kh-item');
+  if (!item) return;
+  const c = CUSTOMERS.find(x => x.record_id === item.dataset.id);
+  if (c) selectCustomer(c);
+});
+
+function selectCustomer(c) {
+  state.kh_cust = c;
+  state.kh_ten = pickStr(c['Tên KH']);
+  state.kh_sdt = pickStr(c['SĐT']);
+  state.nhom   = pickStr(c['Nhóm KH']) || 'N5';
+
+  // CK override
+  const ckG = c['CK Glanzen (override)'];
+  const ckL = c['CK Laborie (override)'];
+  const ckD = c['CK Dr.FS (override)'];
+  const has_override = (typeof ckG === 'number' && ckG > 0) ||
+                       (typeof ckL === 'number' && ckL > 0) ||
+                       (typeof ckD === 'number' && ckD > 0);
+  state.ck_override = has_override ? {
+    Glanzen: typeof ckG === 'number' && ckG > 0 ? ckG : null,
+    Laborie: typeof ckL === 'number' && ckL > 0 ? ckL : null,
+    'Dr.FS': typeof ckD === 'number' && ckD > 0 ? ckD : null,
+  } : null;
+
+  // Fill form
+  document.getElementById('kh_ten').value  = state.kh_ten;
+  document.getElementById('kh_sdt').value  = state.kh_sdt;
+  document.getElementById('kh_nhom').value = state.nhom;
+  const g = CK_GROUPS[state.nhom];
+  document.getElementById('nhom_desc').textContent = g ? g.mota : '';
+  document.getElementById('kh_search').value = '';
+  document.getElementById('kh_selected_tag').textContent = '✓ Đã chọn: ' + state.kh_ten;
+  document.getElementById('btn_kh_clear').style.display = '';
+  khDropdown.classList.remove('open');
+
+  // Fill info box
+  const dc = [pickStr(c['Địa chỉ giao hàng']), pickStr(c['Địa chỉ giao 2'])].filter(Boolean).join(' / ');
+  const hd = [pickStr(c['Mã số thuế']), pickStr(c['Thông tin xuất HĐ'])].filter(Boolean).join(' · ');
+  document.getElementById('kh_i_ma').textContent   = pickStr(c['Mã KH']) || '—';
+  document.getElementById('kh_i_dc').textContent   = dc || '—';
+  document.getElementById('kh_i_hd').textContent   = hd || '—';
+  document.getElementById('kh_i_loai').textContent = pickStr(c['Loại hình']) || '—';
+  document.getElementById('kh_i_sale').textContent = pickStr(c['Sale phụ trách']) || '—';
+
+  // Badges
+  const bgs = [];
+  bgs.push(`<span class="tag tag-new" style="background:#DBEAFE; color:#1E40AF;">Nhóm ${state.nhom}</span>`);
+  if (state.ck_override) {
+    const parts = [];
+    if (state.ck_override.Glanzen) parts.push(`Glanzen ${(state.ck_override.Glanzen*100).toFixed(0)}%`);
+    if (state.ck_override.Laborie) parts.push(`Laborie ${(state.ck_override.Laborie*100).toFixed(0)}%`);
+    if (state.ck_override['Dr.FS']) parts.push(`Dr.FS ${(state.ck_override['Dr.FS']*100).toFixed(0)}%`);
+    bgs.push(`<span class="tag tag-override">⚙️ CK riêng: ${parts.join(' · ')}</span>`);
+  }
+  document.getElementById('kh_i_badges').innerHTML = bgs.join('');
+
+  // YTD bar
+  const dt = c['DT NY YTD'] || 0;
+  const sodon = c['Số đơn YTD'] || 0;
+  const thang = c['Số tháng mua'] || 0;
+  const next = nextTierHint(state.nhom, dt);
+  document.getElementById('kh_i_ytd').innerHTML =
+    `📈 <b>DT NY YTD:</b> ${fmtNum(dt)}đ · ${sodon} đơn / ${thang} tháng` +
+    (next ? ` · ${next}` : '');
+
+  khInfoBox.classList.add('show');
+  refresh();
+}
+
+function nextTierHint(curNhom, dtNy) {
+  const THR = { N5: {up:'N4', min: 50_000_000}, N4: {up:'N3', min: 200_000_000},
+                N3: {up:'N2', min: 500_000_000}, N2: {up:'N1', min: 1_000_000_000} };
+  const r = THR[curNhom];
+  if (!r) return '';
+  const gap = r.min - dtNy;
+  if (gap <= 0) return `<b style="color:#D97706;">⚡ Đã đạt ngưỡng lên ${r.up}</b>`;
+  const pct = Math.round(dtNy / r.min * 100);
+  return `Ngưỡng ${r.up}: <b>${fmtNum(r.min)}đ</b> (còn ${fmtNum(gap)}đ · đạt ${pct}%)`;
+}
+
+function clearCustomer() {
+  state.kh_cust = null;
+  state.ck_override = null;
+  state.kh_ten = ''; state.kh_sdt = ''; state.nhom = '';
+  document.getElementById('kh_ten').value = '';
+  document.getElementById('kh_sdt').value = '';
+  document.getElementById('kh_nhom').value = '';
+  document.getElementById('kh_search').value = '';
+  document.getElementById('kh_selected_tag').textContent = '';
+  document.getElementById('btn_kh_clear').style.display = 'none';
+  document.getElementById('nhom_desc').textContent = '';
+  khInfoBox.classList.remove('show');
+  refresh();
+}
+document.getElementById('btn_kh_clear').addEventListener('click', clearCustomer);
+
+// KH mới — cho phép gõ tự do (không cần record trong hệ thống)
+document.getElementById('btn_kh_new').addEventListener('click', () => {
+  clearCustomer();
+  alert('Nhập Tên KH + SĐT + Nhóm thủ công. Sau khi chốt đơn, admin có thể thêm KH này vào danh bạ.');
+  document.getElementById('kh_ten').focus();
+});
 
 // Populate nhom dropdown
 const nhomSel = document.getElementById('kh_nhom');

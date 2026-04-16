@@ -2,9 +2,15 @@
    PRICING & PNL LOGIC
 ============================================ */
 
-// Tính CK áp cho nhóm × CT
-function getCkForOrder(nhom, ct_id) {
+// Tính CK áp cho nhóm × CT (có thể bị override theo KH)
+// ck_override: {Glanzen, Laborie, 'Dr.FS'} — nếu có giá trị > 0 thì ưu tiên hơn nhóm
+function getCkForOrder(nhom, ct_id, ck_override) {
   const ct = PROGRAMS[ct_id];
+  if (!ct) return 0;
+  // CT3 có ck_fixed cho tất cả — nhưng override KH vẫn thắng
+  if (ck_override && ct.ck_nhan && ck_override[ct.ck_nhan] > 0) {
+    return ck_override[ct.ck_nhan];
+  }
   if (ct.ck_fixed !== undefined) return ct.ck_fixed;
   const group = CK_GROUPS[nhom];
   if (!group) return 0;
@@ -62,7 +68,7 @@ function calcGiftCOGS(tier, ct_id, qua_user) {
 function calcPnL(state) {
   // state: { ct_id, nhom, lines: [{sku, sl}], qua_user: [{sku, sl}] }
   const ct = PROGRAMS[state.ct_id];
-  const ck = getCkForOrder(state.nhom, state.ct_id);
+  const ck = getCkForOrder(state.nhom, state.ct_id, state.ck_override);
 
   let dt_ny = 0, dt_thuc = 0, cogs = 0, qty = 0;
   const lines_detail = (state.lines || []).map(l => {
