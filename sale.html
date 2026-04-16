@@ -188,8 +188,32 @@ body.auth-ok { visibility: visible; }
         </div>
       </div>
 
+      <div class="panel-card" id="ship_panel">
+        <h3><span class="step-num">2</span>🚚 Thông tin giao hàng đơn này</h3>
+        <div class="form-grid form-grid-2">
+          <div style="grid-column: 1 / -1;">
+            <label class="form-label">Địa chỉ giao hàng *</label>
+            <select class="form-select" id="ship_addr_pick">
+              <option value="__dc1__">-- Sử dụng địa chỉ mặc định --</option>
+            </select>
+            <input type="text" class="form-input" id="ship_addr_custom"
+                   placeholder="Nhập địa chỉ giao khác..." style="margin-top:8px; display:none;">
+          </div>
+          <div>
+            <label class="form-label">Người nhận hàng</label>
+            <input type="text" class="form-input" id="ship_receiver" placeholder="VD: Anh Minh (quản lý)">
+            <div class="form-help">Mặc định lấy theo Tên KH / người đại diện</div>
+          </div>
+          <div>
+            <label class="form-label">SĐT nhận hàng</label>
+            <input type="text" class="form-input" id="ship_phone" placeholder="Số của người nhận">
+            <div class="form-help">Có thể khác SĐT liên hệ chính</div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel-card">
-        <h3><span class="step-num">2</span>Chọn chương trình</h3>
+        <h3><span class="step-num">3</span>Chọn chương trình</h3>
         <div class="ct-pick" id="ct_pick">
           <div class="ct-option" data-ct="CT1">
             <h4>CT1 • Glanzen × Glanzen</h4>
@@ -208,14 +232,14 @@ body.auth-ok { visibility: visible; }
       </div>
 
       <div class="panel-card">
-        <h3><span class="step-num">3</span>Chi tiết đơn hàng (khách trả tiền)</h3>
+        <h3><span class="step-num">4</span>Chi tiết đơn hàng (khách trả tiền)</h3>
         <div id="line_wrap">
           <div class="alert alert-info">Chọn chương trình và nhóm KH để bắt đầu</div>
         </div>
       </div>
 
       <div class="panel-card" id="gift_panel" style="display:none;">
-        <h3><span class="step-num">4</span>🎁 Quà tặng đi kèm</h3>
+        <h3><span class="step-num">5</span>🎁 Quà tặng đi kèm</h3>
         <div id="gift_wrap"></div>
       </div>
 
@@ -278,6 +302,9 @@ const state = {
   kh_ten: '', kh_sdt: '', sale_name: '',
   kh_cust: null,    // Customer record được chọn (từ dropdown)
   ck_override: null,// {Glanzen, Laborie, 'Dr.FS'} nếu KH có CK riêng
+  ship_addr: '',    // Địa chỉ giao cho đơn này
+  ship_phone: '',   // SĐT nhận
+  ship_receiver: '',// Tên người nhận
   lines: [],   // [{sku, sl}]
   qua_user: [],
 };
@@ -338,6 +365,12 @@ async function loadDraft() {
   state.kh_sdt = typeof f['SĐT']==='string' ? f['SĐT'] : (f['SĐT']?.[0]?.text || '');
   state.nhom = f['Nhóm KH']?.text || f['Nhóm KH'] || '';
   state.ct_id = f['Chương trình']?.text || f['Chương trình'] || '';
+  state.ship_addr = typeof f['Địa chỉ giao']==='string' ? f['Địa chỉ giao'] : (f['Địa chỉ giao']?.[0]?.text || '');
+  state.ship_phone = typeof f['SĐT nhận hàng']==='string' ? f['SĐT nhận hàng'] : (f['SĐT nhận hàng']?.[0]?.text || '');
+  state.ship_receiver = typeof f['Người nhận hàng']==='string' ? f['Người nhận hàng'] : (f['Người nhận hàng']?.[0]?.text || '');
+  if (state.ship_addr) document.getElementById('ship_addr_custom').value = state.ship_addr;
+  if (state.ship_phone) document.getElementById('ship_phone').value = state.ship_phone;
+  if (state.ship_receiver) document.getElementById('ship_receiver').value = state.ship_receiver;
   document.getElementById('kh_ten').value = state.kh_ten;
   document.getElementById('kh_sdt').value = state.kh_sdt;
   document.getElementById('kh_nhom').value = state.nhom;
@@ -494,7 +527,37 @@ function selectCustomer(c) {
     (next ? ` · ${next}` : '');
 
   khInfoBox.classList.add('show');
+
+  // Populate shipping dropdown với các địa chỉ KH có sẵn
+  populateShipAddrOptions(c);
+  // Default: nếu đơn đã có sẵn (draft) thì giữ, ngược lại mặc định DC1
+  if (!state.ship_addr) {
+    const dc1 = pickStr(c['Địa chỉ giao hàng']);
+    state.ship_addr = dc1;
+    document.getElementById('ship_addr_pick').value = '__dc1__';
+    document.getElementById('ship_addr_custom').style.display = 'none';
+  }
+  // Default receiver = họ tên người đại diện hoặc tên KH
+  if (!state.ship_receiver) {
+    state.ship_receiver = pickStr(c['Họ tên người đại diện']) || pickStr(c['Tên KH']);
+    document.getElementById('ship_receiver').value = state.ship_receiver;
+  }
+  // Default SĐT nhận = SĐT KH
+  if (!state.ship_phone) {
+    state.ship_phone = pickStr(c['SĐT']);
+    document.getElementById('ship_phone').value = state.ship_phone;
+  }
   refresh();
+}
+
+function populateShipAddrOptions(c) {
+  const sel = document.getElementById('ship_addr_pick');
+  const dc1 = pickStr(c['Địa chỉ giao hàng']);
+  const dc2 = pickStr(c['Địa chỉ giao 2']);
+  sel.innerHTML = '';
+  if (dc1) sel.appendChild(new Option(`📍 ĐC mặc định — ${dc1.slice(0, 80)}`, '__dc1__'));
+  if (dc2) sel.appendChild(new Option(`📍 ĐC 2 — ${dc2.slice(0, 80)}`, '__dc2__'));
+  sel.appendChild(new Option('✏️ Địa chỉ khác (nhập tay)', '__custom__'));
 }
 
 function nextTierHint(curNhom, dtNy) {
@@ -512,6 +575,7 @@ function clearCustomer() {
   state.kh_cust = null;
   state.ck_override = null;
   state.kh_ten = ''; state.kh_sdt = ''; state.nhom = '';
+  state.ship_addr = ''; state.ship_phone = ''; state.ship_receiver = '';
   document.getElementById('kh_ten').value = '';
   document.getElementById('kh_sdt').value = '';
   document.getElementById('kh_nhom').value = '';
@@ -519,9 +583,39 @@ function clearCustomer() {
   document.getElementById('kh_selected_tag').textContent = '';
   document.getElementById('btn_kh_clear').style.display = 'none';
   document.getElementById('nhom_desc').textContent = '';
+  document.getElementById('ship_addr_pick').innerHTML = '<option value="__custom__">-- Chưa chọn KH --</option>';
+  document.getElementById('ship_addr_custom').style.display = 'none';
+  document.getElementById('ship_addr_custom').value = '';
+  document.getElementById('ship_receiver').value = '';
+  document.getElementById('ship_phone').value = '';
   khInfoBox.classList.remove('show');
   refresh();
 }
+
+// ══════════ SHIPPING INFO BINDINGS ══════════
+document.getElementById('ship_addr_pick').addEventListener('change', e => {
+  const v = e.target.value;
+  const custom = document.getElementById('ship_addr_custom');
+  if (v === '__custom__') {
+    custom.style.display = '';
+    custom.focus();
+    state.ship_addr = custom.value || '';
+  } else {
+    custom.style.display = 'none';
+    if (!state.kh_cust) return;
+    if (v === '__dc1__') state.ship_addr = pickStr(state.kh_cust['Địa chỉ giao hàng']);
+    else if (v === '__dc2__') state.ship_addr = pickStr(state.kh_cust['Địa chỉ giao 2']);
+  }
+});
+document.getElementById('ship_addr_custom').addEventListener('input', e => {
+  state.ship_addr = e.target.value;
+});
+document.getElementById('ship_receiver').addEventListener('input', e => {
+  state.ship_receiver = e.target.value;
+});
+document.getElementById('ship_phone').addEventListener('input', e => {
+  state.ship_phone = e.target.value;
+});
 document.getElementById('btn_kh_clear').addEventListener('click', clearCustomer);
 
 // KH mới — cho phép gõ tự do (không cần record trong hệ thống)
@@ -748,6 +842,9 @@ function buildOrderPayload(status) {
   return {
     status,
     kh_ten: state.kh_ten, kh_sdt: state.kh_sdt,
+    ship_addr: state.ship_addr || '',
+    ship_phone: state.ship_phone || '',
+    ship_receiver: state.ship_receiver || '',
     nhom: state.nhom, ct_id: state.ct_id,
     tier: p.tier ? p.tier.ten : '',
     dt_ny: p.dt_ny, dt_thuc: p.dt_thuc,
@@ -781,6 +878,9 @@ async function saveOrder(status) {
       'COGS': payload.cogs, 'GV quà': payload.gv_qua,
       'LN thuần': payload.ln_thuan, '% LN/NY': payload.pct_ln_ny,
       'Trạng thái': status,
+      'Địa chỉ giao': state.ship_addr || '',
+      'SĐT nhận hàng': state.ship_phone || '',
+      'Người nhận hàng': state.ship_receiver || '',
     };
     const r = await apiUpdateOrder(state.record_id, patch);
     if (r.code === 0) {

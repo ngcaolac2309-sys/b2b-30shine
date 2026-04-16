@@ -270,6 +270,9 @@ async function createOrder(env, session, body) {
     'Trạng thái': body.status || 'Nháp',
     'Sale': session.email,
     'Ghi chú': body.ghi_chu || '',
+    'Địa chỉ giao': body.ship_addr || '',
+    'SĐT nhận hàng': body.ship_phone || '',
+    'Người nhận hàng': body.ship_receiver || '',
   };
   const r = await larkFetch(env,
     `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_ORDERS}/records`,

@@ -377,6 +377,24 @@ td input.num { text-align: right; }
       </div>
     </div>
 
+    <div style="margin-top: 16px; padding:14px; background: #F3F4F6; border-radius: 8px; border-left: 4px solid #6B7280;">
+      <h4 style="font-size:13px; color:#374151; margin-bottom:8px;">🧾 THÔNG TIN KẾ TOÁN (cho panel kế toán)</h4>
+      <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <div>
+          <label class="form-label" style="font-size:11px;">Họ tên người đại diện</label>
+          <input type="text" class="form-input" id="c_hoten_dd" placeholder="VD: Nguyễn Văn A">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px;">CCCD</label>
+          <input type="text" class="form-input" id="c_cccd" placeholder="12 số">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px;">Email HĐ</label>
+          <input type="email" class="form-input" id="c_email" placeholder="email@...">
+        </div>
+      </div>
+    </div>
+
     <div style="margin-top: 20px; padding:14px; background: #FFF9E6; border-radius: 8px; border-left: 4px solid #D4A017;">
       <h4 style="font-size:13px; color:#92400E; margin-bottom:8px;">⚙️ CK OVERRIDE (để trống = theo chuẩn nhóm)</h4>
       <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px;">
@@ -621,6 +639,9 @@ function openCustModal(cust = null) {
     setv('c_dc2',  pickStr(cust['Địa chỉ giao 2']));
     setv('c_mst',  pickStr(cust['Mã số thuế']));
     setv('c_hd',   pickStr(cust['Thông tin xuất HĐ']));
+    setv('c_hoten_dd', pickStr(cust['Họ tên người đại diện']));
+    setv('c_cccd',     pickStr(cust['CCCD']));
+    setv('c_email',    pickStr(cust['Email HĐ']));
     setv('c_ck_g', cust['CK Glanzen (override)'] || '');
     setv('c_ck_l', cust['CK Laborie (override)'] || '');
     setv('c_ck_d', cust['CK Dr.FS (override)']   || '');
@@ -637,7 +658,8 @@ function openCustModal(cust = null) {
     info.style.display = 'block';
   } else {
     ['c_ma','c_ten','c_sdt','c_sale','c_ten_chuan','c_dc1','c_dc2',
-     'c_mst','c_hd','c_ck_g','c_ck_l','c_ck_d','c_note'].forEach(id => setv(id, ''));
+     'c_mst','c_hd','c_hoten_dd','c_cccd','c_email',
+     'c_ck_g','c_ck_l','c_ck_d','c_note'].forEach(id => setv(id, ''));
     setv('c_kv', 'HN'); setv('c_nhom', 'N5'); setv('c_loai', 'Salon/Barber');
     document.getElementById('c_active').checked = true;
     document.getElementById('cust_ytd_info').style.display = 'none';
@@ -665,6 +687,9 @@ document.getElementById('c_save').addEventListener('click', async () => {
     'Địa chỉ giao 2':    document.getElementById('c_dc2').value.trim(),
     'Mã số thuế': document.getElementById('c_mst').value.trim(),
     'Thông tin xuất HĐ': document.getElementById('c_hd').value.trim(),
+    'Họ tên người đại diện': document.getElementById('c_hoten_dd').value.trim(),
+    'CCCD':    document.getElementById('c_cccd').value.trim(),
+    'Email HĐ': document.getElementById('c_email').value.trim(),
     'Ghi chú': document.getElementById('c_note').value.trim(),
     'Active': document.getElementById('c_active').checked,
   };
