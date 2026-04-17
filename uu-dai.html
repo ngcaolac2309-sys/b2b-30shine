@@ -285,8 +285,8 @@
         <h2>GLANZEN <span class="gold">×</span> GLANZEN</h2>
         <p class="tagline">Mua Glanzen — Tặng Glanzen. Dành cho đại lý sỉ và salon tiêu chuẩn, giúp tối ưu chi phí nhập hàng và gia tăng tồn kho tạo kiểu.</p>
         <div class="ct-banner-chips">
-          <span class="hero-chip">👥 Đại lý sỉ & Salon</span>
-          <span class="hero-chip">💰 Giảm giá đến <b>45%</b></span>
+          <span class="hero-chip">👥 Tất cả nhóm KH</span>
+          <span class="hero-chip">💰 CK đến <b>60%</b></span>
           <span class="hero-chip">📦 5 SKU Glanzen</span>
         </div>
       </div>
@@ -318,9 +318,9 @@
         <h2>GLANZEN <span class="gold">×</span> LABORIE</h2>
         <p class="tagline">Mua Glanzen — Tặng Laborie Premium. Chương trình cao cấp dành riêng cho VIP đối tác và chuỗi lớn với quà Laborie 250ml tự chọn.</p>
         <div class="ct-banner-chips">
-          <span class="hero-chip">👥 VIP Đối tác & Chuỗi</span>
-          <span class="hero-chip">💰 Giảm đến <b>60%</b></span>
-          <span class="hero-chip">🎁 Quà Laborie tự chọn</span>
+          <span class="hero-chip">👥 Tất cả nhóm KH</span>
+          <span class="hero-chip">💰 CK đến <b>60%</b></span>
+          <span class="hero-chip">🎁 Quà <b>Laborie</b> tự chọn</span>
         </div>
       </div>
       <div class="ct-banner-visual">
@@ -377,25 +377,36 @@
 </section>
 
 <!-- CT4 -->
-<section class="ct-block section-soft" id="ct4">
+<section class="ct-block" id="ct4" style="background:var(--bg-soft);">
   <div class="container">
     <div class="ct-banner">
       <div class="ct-banner-text">
         <div class="ct-banner-num">Chương trình 04</div>
-        <h2>Dr. For Skin <span class="gold">× Glanzen</span></h2>
-        <p class="tagline">Mua Dr. For Skin — Tặng sản phẩm <b>Glanzen Styling</b> theo b���c đơn. CK theo nhóm KH (30%–40%).</p>
+        <h2>DR. FOR SKIN <span class="gold">×</span> GLANZEN</h2>
+        <p class="tagline">Mua Dr. For Skin — Tặng sản phẩm <b>Glanzen Styling</b> theo bậc đơn. CK theo nhóm KH (30%–40%). Max CK + quà = 55%.</p>
         <div class="ct-banner-chips">
           <span class="hero-chip">👥 Tất cả nhóm KH</span>
-          <span class="hero-chip">💰 CK Dr. For Skin <b>30%–40%</b></span>
-          <span class="hero-chip">🎁 Quà tặng <b>Glanzen</b></span>
+          <span class="hero-chip">💰 CK đến <b>40%</b></span>
+          <span class="hero-chip">🎁 Quà <b>Glanzen</b></span>
+          <span class="hero-chip">📦 3 SKU Dr. For Skin</span>
         </div>
       </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/products/drfs_dabo_combo.jpg" alt="Dr. For Skin — Dabo Serum & SRM combo">
+      </div>
     </div>
-    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Bậc quà tặng — 3 bậc theo DT thực thu</h3>
-    <div class="tier-grid">
-      <div class="tier-card"><div class="tier-badge">Bậc 1</div><div class="tier-min">DT thực ≥ 5 triệu</div><p>1 Sáp Claywax 60g + 1 Magic Spray</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 2</div><div class="tier-min">DT thực ≥ 10 triệu</div><p>3 Sáp Claywax + 2 Magic Spray + 1 Booster</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 3</div><div class="tier-min">DT thực ≥ 20 triệu</div><p>8 Sáp Claywax + 5 Magic Spray + 3 Booster</p></div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Quà tặng theo bậc đơn</h3>
+    <div class="tier-grid" id="ct4-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 Sản phẩm Dr. For Skin áp dụng</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th>
+        </tr></thead><tbody id="ct4-skus"></tbody></table>
+      </div>
+      <p class="text-muted mt-12" style="font-size:13px;">💡 Quà Glanzen Styling — Sáp Claywax, Magic Spray, Booster theo bậc đơn.</p>
     </div>
   </div>
 </section>
@@ -406,46 +417,65 @@
     <div class="ct-banner">
       <div class="ct-banner-text">
         <div class="ct-banner-num">Chương trình 05</div>
-        <h2>Dr. For Skin <span class="gold">× Laborie</span></h2>
-        <p class="tagline">Mua Dr. For Skin — Tặng sản phẩm <b>Laborie Premium</b> theo bậc. CK theo nhóm KH (30%–40%).</p>
+        <h2>DR. FOR SKIN <span class="gold">×</span> LABORIE</h2>
+        <p class="tagline">Mua Dr. For Skin — Tặng sản phẩm <b>Laborie Premium</b> theo bậc. CK theo nhóm KH (30%–40%). Max CK + quà = 55%.</p>
         <div class="ct-banner-chips">
           <span class="hero-chip">👥 Tất cả nhóm KH</span>
-          <span class="hero-chip">💰 CK Dr. For Skin <b>30%–40%</b></span>
-          <span class="hero-chip">🎁 Quà tặng <b>Laborie</b></span>
+          <span class="hero-chip">💰 CK đến <b>40%</b></span>
+          <span class="hero-chip">🎁 Quà <b>Laborie</b> tự chọn</span>
+          <span class="hero-chip">📦 3 SKU Dr. For Skin</span>
         </div>
       </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/products/laborie_bond_shampoo.jpg" alt="Laborie Premium — Quà tặng CT5">
+      </div>
     </div>
-    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Bậc quà tặng — 5 bậc theo DT thực thu</h3>
-    <div class="tier-grid">
-      <div class="tier-card"><div class="tier-badge">Bậc 1</div><div class="tier-min">DT thực ≥ 3 triệu</div><p>1 chai Laborie 250ml (chọn loại)</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 2</div><div class="tier-min">DT thực ≥ 5 triệu</div><p>2 Laborie 250ml + 1 Mask 100ml</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 3</div><div class="tier-min">DT thực ≥ 10 triệu</div><p>3 Laborie + 2 Mask + 1 Serum</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 4</div><div class="tier-min">DT thực ≥ 15 triệu</div><p>4 Laborie + 2 Mask + 1 Serum</p></div>
-      <div class="tier-card tier-vip"><div class="tier-badge vip">VIP</div><div class="tier-min">DT thực ≥ 25 triệu</div><p>8 Laborie + 3 Mask + 2 Serum + 1 Hair Oil</p></div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Quà tặng theo bậc đơn</h3>
+    <div class="tier-grid" id="ct5-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 Sản phẩm Dr. For Skin áp dụng</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th>
+        </tr></thead><tbody id="ct5-skus"></tbody></table>
+      </div>
+      <p class="text-muted mt-12" style="font-size:13px;">💡 Quà Laborie 250ml — 7 SKU tự chọn: Bond Shampoo, Detox Shampoo, Scalp Shampoo, Bond Conditioner, Lipid Bond Hair Oil, Molecular Mask, Molecular Serum.</p>
     </div>
   </div>
 </section>
 
 <!-- CT6 -->
-<section class="ct-block section-soft" id="ct6">
+<section class="ct-block" id="ct6" style="background:var(--bg-soft);">
   <div class="container">
     <div class="ct-banner">
       <div class="ct-banner-text">
         <div class="ct-banner-num">Chương trình 06</div>
-        <h2>Dr. For Skin <span class="gold">× Dr. For Skin</span></h2>
-        <p class="tagline">Mua Dr. For Skin — Tặng thêm <b>Dr. For Skin</b> theo bậc. CK theo nhóm (30%–40%).</p>
+        <h2>DR. FOR SKIN <span class="gold">×</span> DR. FOR SKIN</h2>
+        <p class="tagline">Mua Dr. For Skin — Tặng thêm <b>Dr. For Skin</b> theo bậc. CK theo nhóm (30%–40%). Max CK + quà = 55%.</p>
         <div class="ct-banner-chips">
           <span class="hero-chip">👥 Tất cả nhóm KH</span>
-          <span class="hero-chip">💰 CK Dr. For Skin <b>30%–40%</b></span>
-          <span class="hero-chip">🎁 Quà tặng <b>Dr. For Skin</b></span>
+          <span class="hero-chip">💰 CK đến <b>40%</b></span>
+          <span class="hero-chip">🎁 Quà <b>Dr. For Skin</b></span>
+          <span class="hero-chip">📦 3 SKU Dr. For Skin</span>
         </div>
       </div>
+      <div class="ct-banner-visual">
+        <img src="assets/brand/products/drfs_serum_7in1.jpg" alt="Dr. For Skin Serum — Quà tặng CT6">
+      </div>
     </div>
-    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Bậc quà tặng — 3 bậc theo DT thực thu</h3>
-    <div class="tier-grid">
-      <div class="tier-card"><div class="tier-badge">Bậc 1</div><div class="tier-min">DT thực ≥ 3 triệu</div><p>1 SRM Charcoal 100g</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 2</div><div class="tier-min">DT thực ≥ 8 triệu</div><p>1 Dabo Serum + 1 SRM Teatrea</p></div>
-      <div class="tier-card"><div class="tier-badge">Bậc 3</div><div class="tier-min">DT thực ≥ 15 triệu</div><p>3 Dabo Serum + 3 SRM Teatrea + 2 SRM Charcoal</p></div>
+
+    <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:18px;">🎁 Quà tặng theo bậc đơn</h3>
+    <div class="tier-grid" id="ct6-tiers"></div>
+
+    <div class="mt-32">
+      <h3 style="font-family:var(--font-head); font-size:22px; color:var(--primary-dark); margin-bottom:14px;">📦 Sản phẩm Dr. For Skin áp dụng</h3>
+      <div class="table-wrap">
+        <table class="price-table"><thead><tr>
+          <th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá niêm yết</th>
+        </tr></thead><tbody id="ct6-skus"></tbody></table>
+      </div>
     </div>
   </div>
 </section>
@@ -503,6 +533,9 @@
     <a href="#ct1">CT1</a>
     <a href="#ct2">CT2</a>
     <a href="#ct3">CT3</a>
+    <a href="#ct4">CT4</a>
+    <a href="#ct5">CT5</a>
+    <a href="#ct6">CT6</a>
   </div>
   <div class="footer-copy">© 2026 30Shine Corporation · Áp dụng cho đối tác B2B & Nhượng Quyền</div>
 </footer>
@@ -546,9 +579,15 @@ function renderSkusTable(ct_id, container_id, withCt3Price = false) {
 renderTiers('CT1', 'ct1-tiers');
 renderTiers('CT2', 'ct2-tiers');
 renderTiers('CT3', 'ct3-tiers');
+renderTiers('CT4', 'ct4-tiers');
+renderTiers('CT5', 'ct5-tiers');
+renderTiers('CT6', 'ct6-tiers');
 renderSkusTable('CT1', 'ct1-skus');
 renderSkusTable('CT2', 'ct2-skus');
 renderSkusTable('CT3', 'ct3-skus', true);
+renderSkusTable('CT4', 'ct4-skus');
+renderSkusTable('CT5', 'ct5-skus');
+renderSkusTable('CT6', 'ct6-skus');
 
 // Render ladder chiết khấu (5 bậc — không show NQ vì nội bộ)
 function renderLadder() {
