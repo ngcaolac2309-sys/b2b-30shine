@@ -750,7 +750,15 @@ function renderLines() {
       let line = state.lines.find(l => l.sku === sku);
       if (line) line.sl = sl;
       else state.lines.push({ sku, sl });
-      refresh();
+      // Chỉ update thành tiền + PnL, KHÔNG rebuild bảng (giữ focus)
+      const s = skuById(sku);
+      const ck = getCkForOrder(state.nhom, state.ct_id, state.ck_override);
+      if (s) {
+        const tt = s.ny * (1 - ck) * sl;
+        const el = document.getElementById('tt_' + sku);
+        if (el) el.textContent = fmtNum(tt);
+      }
+      updatePnL();
     });
   });
 }
@@ -834,7 +842,13 @@ function renderGiftPanel() {
       if (q) q.sl = sl;
       else state.qua_user.push({ sku, sl });
       state.qua_user = state.qua_user.filter(x => x.sl > 0);
-      refresh();
+      // Update GV quà tổng cell + PnL, KHÔNG rebuild bảng
+      const s = skuById(sku);
+      if (s) {
+        const td = e.target.closest('tr').querySelector('td:last-child');
+        if (td) td.textContent = fmtNum(s.gv * sl);
+      }
+      updatePnL();
     });
   });
 
@@ -845,6 +859,40 @@ function renderGiftPanel() {
       state.qua_user = suggested.map(g => ({ sku: g.sku, sl: g.sl }));
       refresh();
     });
+  }
+}
+
+// updatePnL: chỉ update số PnL panel, KHÔNG rebuild bảng (giữ focus input)
+function updatePnL() {
+  if (!state.ct_id || !state.nhom) return;
+  const p = calcPnL(state);
+  document.getElementById('pnl_ny').textContent = fmtMoney(p.dt_ny);
+  document.getElementById('pnl_ck').textContent = fmtMoney(-p.ck_kh_amount);
+  document.getElementById('pnl_thuc').textContent = fmtMoney(p.dt_thuc);
+  document.getElementById('pnl_cogs').textContent = fmtMoney(-p.cogs);
+  document.getElementById('pnl_nv').textContent = fmtMoney(-p.ck_nv);
+  document.getElementById('pnl_vh').textContent = fmtMoney(-p.van_hanh);
+  document.getElementById('pnl_qua').textContent = fmtMoney(-p.gv_qua);
+  document.getElementById('pnl_ln').textContent = `${fmtMoney(p.ln_thuan)} (${fmtPct(p.pct_ln_ny)})`;
+  const pnlTierText = p.tier
+    ? `${p.tier.ten}${p.tier.nhom_only ? ' · '+p.tier.nhom_only : ''}`
+    : 'Chưa đủ bậc';
+  document.getElementById('pnl_tier').textContent = pnlTierText;
+  const s = tierStatus(p.pct_ln_ny);
+  const st = document.getElementById('pnl_status');
+  st.textContent = s.text;
+  st.className = `pnl-status ${s.cls}`;
+  document.getElementById('btn_preview').disabled = !(p.dt_ny > 0);
+  // Update gift warning bar nếu có
+  const warnEl = document.querySelector('.gift-warn-bar');
+  if (warnEl) {
+    const gc = checkGiftLimit(state, p);
+    if (state.qua_user.length) {
+      warnEl.className = `gift-warn-bar ${gc.over ? 'over' : 'ok'}`;
+      warnEl.innerHTML = gc.over
+        ? `⚠️ VƯỢT NGƯỠNG: Tổng CK+quà = <b>${gc.pct_total}%</b> (max ${state.nhom}: <b>${gc.pct_max}%</b>). Giảm SL quà.`
+        : `✅ Tổng CK+quà: <b>${gc.pct_total}%</b> / ${gc.pct_max}% (còn ${(gc.pct_max - gc.pct_total).toFixed(1)}% dư)`;
+    }
   }
 }
 
@@ -860,26 +908,7 @@ function refresh() {
     });
     return;
   }
-  const p = calcPnL(state);
-  document.getElementById('pnl_ny').textContent = fmtMoney(p.dt_ny);
-  document.getElementById('pnl_ck').textContent = fmtMoney(-p.ck_kh_amount);
-  document.getElementById('pnl_thuc').textContent = fmtMoney(p.dt_thuc);
-  document.getElementById('pnl_cogs').textContent = fmtMoney(-p.cogs);
-  document.getElementById('pnl_nv').textContent = fmtMoney(-p.ck_nv);
-  document.getElementById('pnl_vh').textContent = fmtMoney(-p.van_hanh);
-  document.getElementById('pnl_qua').textContent = fmtMoney(-p.gv_qua);
-  document.getElementById('pnl_ln').textContent = `${fmtMoney(p.ln_thuan)} (${fmtPct(p.pct_ln_ny)})`;
-  document.getElementById('pnl_tier').textContent = p.tier ? `${p.tier.ten} — ${p.tier.qua_text}` : 'Chưa đủ bậc';
-  const s = tierStatus(p.pct_ln_ny);
-  const st = document.getElementById('pnl_status');
-  st.textContent = s.text;
-  st.className = `pnl-status ${s.cls}`;
-  document.getElementById('btn_preview').disabled = !(p.dt_ny > 0);
-  // Cập nhật thành tiền per line
-  p.lines.forEach(l => {
-    const el = document.getElementById(`tt_${l.sku}`);
-    if (el) el.textContent = fmtNum(l.thanh_tien);
-  });
+  updatePnL();
 }
 
 document.getElementById('btn_preview').addEventListener('click', () => {
