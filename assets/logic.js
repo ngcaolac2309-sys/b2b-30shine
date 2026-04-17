@@ -49,7 +49,7 @@ function calcGiftNyValue(qua_user) {
 // Ngưỡng max (CK + quà)/NY theo nhãn CT — Sale nội bộ, không hiện cho KH
 const GIFT_MAX_PCT = {
   Glanzen: { N1: 0.75, N2: 0.60, N3: 0.55, N4: 0.48, N5: 0.38 },
-  Laborie: { N1: 0.55, N2: 0.50, N3: 0.45, N4: 0.40, N5: 0.35 },
+  Laborie: { N1: 0.60, N2: 0.55, N3: 0.50, N4: 0.48, N5: 0.45 },
   'Dr. For Skin': { N1: 0.55, N2: 0.52, N3: 0.50, N4: 0.48, N5: 0.45 },
 };
 
