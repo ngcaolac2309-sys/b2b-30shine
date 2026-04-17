@@ -187,7 +187,10 @@ body.auth-ok { visibility: visible; }
           </div>
           <div>
             <label class="form-label">Sale phụ trách</label>
-            <input type="text" class="form-input" id="sale_name" placeholder="Tên NV">
+            <input type="text" class="form-input" id="sale_name" placeholder="Tên NV" readonly>
+            <select class="form-select" id="sale_name_admin" style="display:none; margin-top:6px;">
+              <option value="">-- Chọn Sale (admin) --</option>
+            </select>
           </div>
         </div>
         <div class="kh-info-box" id="kh_info_box">
@@ -363,7 +366,31 @@ async function initAuth() {
   document.getElementById('user_box').style.display = '';
   document.getElementById('user_name').textContent = CURRENT_USER.name + ' (' + CURRENT_USER.role + ')';
   document.getElementById('btn_login_nav').style.display = 'none';
-  if (CURRENT_USER.role === 'admin') document.getElementById('nav_admin').style.display = '';
+  if (CURRENT_USER.role === 'admin') {
+    document.getElementById('nav_admin').style.display = '';
+    // Admin: show dropdown chọn Sale khác
+    const adminSel = document.getElementById('sale_name_admin');
+    adminSel.style.display = '';
+    apiListUsers().then(users => {
+      const sales = users.filter(u => {
+        const role = (typeof u.Role === 'object' ? u.Role?.text : u.Role) || '';
+        return (role === 'sale' || role === 'admin') && u.Active;
+      });
+      sales.forEach(u => {
+        const name = (typeof u['Họ tên'] === 'object' ? u['Họ tên']?.[0]?.text : u['Họ tên']) || '';
+        const opt = document.createElement('option');
+        opt.value = name || (typeof u.Email === 'object' ? u.Email?.[0]?.text : u.Email) || '';
+        opt.textContent = opt.value;
+        adminSel.appendChild(opt);
+      });
+    });
+    adminSel.addEventListener('change', e => {
+      if (e.target.value) {
+        document.getElementById('sale_name').value = e.target.value;
+        state.sale_name = e.target.value;
+      }
+    });
+  }
   document.getElementById('sale_name').value = CURRENT_USER.name || CURRENT_USER.email;
   state.sale_name = CURRENT_USER.name || CURRENT_USER.email;
   document.getElementById('btn_draft').disabled = false;
@@ -599,6 +626,7 @@ function nextTierHint(curNhom, dtNy) {
 function clearCustomer() {
   state.kh_cust = null;
   state.ck_override = null;
+  state._new_kh = false;
   state.kh_ten = ''; state.kh_sdt = ''; state.nhom = '';
   state.ship_addr = ''; state.ship_phone = ''; state.ship_receiver = '';
   document.getElementById('kh_ten').value = '';
@@ -643,11 +671,73 @@ document.getElementById('ship_phone').addEventListener('input', e => {
 });
 document.getElementById('btn_kh_clear').addEventListener('click', clearCustomer);
 
-// KH mới — cho phép gõ tự do (không cần record trong hệ thống)
+// KH mới — mở form inline tạo KH
 document.getElementById('btn_kh_new').addEventListener('click', () => {
   clearCustomer();
-  alert('Nhập Tên KH + SĐT + Nhóm thủ công. Sau khi chốt đơn, admin có thể thêm KH này vào danh bạ.');
-  document.getElementById('kh_ten').focus();
+  state._new_kh = true;
+  document.getElementById('kh_ten').removeAttribute('readonly');
+  // Hiện form KH mới
+  const box = document.getElementById('kh_info_box');
+  box.classList.add('show');
+  box.innerHTML = `
+    <div style="font-weight:700; color:var(--primary-dark); margin-bottom:10px;">📝 Tạo khách hàng mới</div>
+    <div class="form-grid form-grid-2" style="gap:10px;">
+      <div>
+        <label class="form-label" style="font-size:11px;">Tên KH *</label>
+        <input type="text" class="form-input" id="new_kh_ten" placeholder="Tên shop / salon">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:11px;">SĐT * (verify trùng)</label>
+        <input type="text" class="form-input" id="new_kh_sdt" placeholder="0909xxxxxx">
+        <div id="new_kh_sdt_status" style="font-size:11px; margin-top:4px;"></div>
+      </div>
+      <div>
+        <label class="form-label" style="font-size:11px;">Khu vực</label>
+        <select class="form-select" id="new_kh_kv"><option>HN</option><option>HCM</option><option>Tỉnh khác</option></select>
+      </div>
+      <div>
+        <label class="form-label" style="font-size:11px;">Loại hình</label>
+        <select class="form-select" id="new_kh_loai">
+          <option>Salon/Barber</option><option>Chuỗi</option><option>NPP/Đại lý</option>
+          <option>Ecom</option><option>Spa</option><option>Cá nhân</option><option>Khác</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label class="form-label" style="font-size:11px;">Địa chỉ giao hàng</label>
+        <input type="text" class="form-input" id="new_kh_dc" placeholder="Số nhà, đường, phường, quận, tỉnh">
+      </div>
+    </div>
+    <div style="margin-top:10px; font-size:12px; color:#92400E; background:#FEF3C7; padding:8px 12px; border-radius:6px;">
+      💡 Sau khi <b>Chốt đơn</b>, KH mới sẽ được tự động lưu vào danh bạ khách hàng.
+    </div>
+  `;
+  // Sync fields → state
+  const syncNew = () => {
+    const ten = document.getElementById('new_kh_ten')?.value || '';
+    const sdt = document.getElementById('new_kh_sdt')?.value || '';
+    state.kh_ten = ten;
+    state.kh_sdt = sdt;
+    document.getElementById('kh_ten').value = ten;
+    document.getElementById('kh_sdt').value = sdt;
+  };
+  document.getElementById('new_kh_ten')?.addEventListener('input', syncNew);
+  document.getElementById('new_kh_sdt')?.addEventListener('input', e => {
+    syncNew();
+    // Verify SĐT trùng
+    const sdt = e.target.value.trim();
+    const statusEl = document.getElementById('new_kh_sdt_status');
+    if (sdt.length >= 9) {
+      const dup = CUSTOMERS.find(c => pickStr(c['SĐT']) === sdt);
+      if (dup) {
+        statusEl.innerHTML = `<span style="color:#DC2626;">⚠️ SĐT đã tồn tại: <b>${pickStr(dup['Tên KH'])}</b> — nên chọn KH này thay vì tạo mới</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:#16A34A;">✅ SĐT chưa có trong hệ thống</span>`;
+      }
+    } else {
+      statusEl.textContent = '';
+    }
+  });
+  document.getElementById('new_kh_ten')?.focus();
 });
 
 // Populate nhom dropdown
@@ -980,9 +1070,31 @@ async function saveOrder(status) {
 }
 
 document.getElementById('btn_draft').addEventListener('click', () => saveOrder('Nháp'));
-document.getElementById('btn_finalize').addEventListener('click', () => {
+document.getElementById('btn_finalize').addEventListener('click', async () => {
   if (!confirm('Chốt đơn sẽ khoá không sửa được. Tiếp tục?')) return;
-  saveOrder('Chốt đơn');
+  await saveOrder('Chốt đơn');
+
+  // Nếu KH mới → tự động tạo Customer record
+  if (state._new_kh && state.kh_ten && state.kh_sdt) {
+    const newKhFields = {
+      'Mã KH': 'MaKH_AUTO_' + Date.now().toString(36).toUpperCase(),
+      'Tên KH': state.kh_ten,
+      'SĐT': state.kh_sdt,
+      'Khu vực': document.getElementById('new_kh_kv')?.value || 'HN',
+      'Loại hình': document.getElementById('new_kh_loai')?.value || 'Salon/Barber',
+      'Nhóm KH': state.nhom || 'N5',
+      'Sale phụ trách': state.sale_name || '',
+      'Địa chỉ giao hàng': document.getElementById('new_kh_dc')?.value || state.ship_addr || '',
+      'Active': true,
+      'Ghi chú': 'Tạo tự động khi chốt đơn ' + (state.ma_don || ''),
+    };
+    const r = await apiCreateCustomer(newKhFields);
+    if (r.code === 0) {
+      state._new_kh = false;
+      CUSTOMERS = await apiListCustomers();
+      alert('✅ KH mới "' + state.kh_ten + '" đã được lưu vào danh bạ khách hàng.');
+    }
+  }
 });
 
 function openQuotePreview(s, p) {
@@ -1325,6 +1437,16 @@ function openQuotePreview(s, p) {
         <div class="meta-value">${p.ct_name || '—'}<div class="small">Ngày: ${now} · Sale: ${s.sale_name || '—'}</div></div>
       </div>
     </div>
+    ${s.ship_addr ? `<div class="doc-meta" style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15);">
+      <div class="meta-block">
+        <div class="meta-label">Địa chỉ giao hàng</div>
+        <div class="meta-value" style="font-size:12px;">${s.ship_addr}</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Người nhận · SĐT nhận</div>
+        <div class="meta-value">${s.ship_receiver || s.kh_ten || '—'}<div class="small">SĐT: ${s.ship_phone || s.kh_sdt || '—'}</div></div>
+      </div>
+    </div>` : ''}
   </div>
 
   <div class="doc-body">
