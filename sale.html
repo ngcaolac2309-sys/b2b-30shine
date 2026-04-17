@@ -49,7 +49,19 @@ body.auth-ok { visibility: visible; }
 .ct-option.active { border-color: var(--primary); background: #EFF6FF; }
 .ct-option h4 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
 .ct-option p { font-size: 12px; color: var(--text-muted); }
-.line-table input.qty { width: 70px; }
+.line-table input.qty {
+  width: 80px; text-align: center; font-size: 14px; font-weight: 600;
+  padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+  -moz-appearance: textfield;
+}
+.line-table input.qty::-webkit-outer-spin-button,
+.line-table input.qty::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.gift-warn-bar {
+  margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+}
+.gift-warn-bar.ok { background: #DCFCE7; color: #14532D; border-left: 3px solid #16A34A; }
+.gift-warn-bar.over { background: #FEE2E2; color: #991B1B; border-left: 3px solid #DC2626; }
 .line-table select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; }
 .actions-bar {
   position: sticky; bottom: 0; background: #fff;
@@ -726,7 +738,7 @@ function renderLines() {
       <td>${s.ten}</td>
       <td class="num font-mono text-muted">${fmtNum(s.ny)}</td>
       <td class="num font-mono"><b>${fmtNum(gia_sau_ck)}</b></td>
-      <td class="num"><input type="number" class="qty" min="0" value="${sl}" data-sku="${skuId}"></td>
+      <td class="num"><input type="number" class="qty" min="0" inputmode="numeric" step="1" value="${sl}" data-sku="${skuId}"></td>
       <td class="num font-mono"><b id="tt_${skuId}">${fmtNum(thanh_tien)}</b></td>
     `;
     tbody.appendChild(tr);
@@ -767,16 +779,24 @@ function renderGiftPanel() {
   if (tier.qua_fixed) tier.qua_fixed.forEach(q => gift_skus.add(q.sku));
   if (tier.qua_options) tier.qua_options.forEach(s => gift_skus.add(s));
   if (ct.skus) ct.skus.forEach(s => gift_skus.add(s));
-  // Also allow picking any Laborie 250ml for CT2/CT3
-  if (state.ct_id === 'CT2' || state.ct_id === 'CT3') {
-    ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'].forEach(s => gift_skus.add(s));
-  }
-  // SAP_GLZ60, XD_009, XTP_007 for CT1 gifts
-  if (state.ct_id === 'CT1') {
-    ['SAP_GLZ60','XD_009','XTP_007'].forEach(s => gift_skus.add(s));
-  }
+  // Mở rộng pool quà theo nhãn tặng
+  const laborie_all = ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'];
+  const glanzen_gifts = ['SAP_GLZ60','SAP_GLZL60','SAP_080','GOM_016','GOM_017','XTP_009','XD_009','XTP_007'];
+  const drfs_all = ['TC_005','SRM_097','SRM_104'];
 
-  wrap.innerHTML = fixed_html + `
+  if (['CT1','CT4'].includes(state.ct_id)) glanzen_gifts.forEach(s => gift_skus.add(s));
+  if (['CT2','CT3','CT5'].includes(state.ct_id)) laborie_all.forEach(s => gift_skus.add(s));
+  if (['CT6'].includes(state.ct_id)) drfs_all.forEach(s => gift_skus.add(s));
+
+  // Gift warning bar
+  const giftCheck = checkGiftLimit(state, p);
+  const warnHtml = giftCheck.over
+    ? `<div class="gift-warn-bar over">⚠️ VƯỢT NGƯỠNG: Tổng CK+quà = <b>${giftCheck.pct_total}%</b> (max cho ${state.nhom}: <b>${giftCheck.pct_max}%</b>). Giảm số lượng quà hoặc liên hệ quản lý.</div>`
+    : (state.qua_user.length
+      ? `<div class="gift-warn-bar ok">✅ Tổng CK+quà: <b>${giftCheck.pct_total}%</b> / ${giftCheck.pct_max}% (còn ${(giftCheck.pct_max - giftCheck.pct_total).toFixed(1)}% dư)</div>`
+      : '');
+
+  wrap.innerHTML = fixed_html + warnHtml + `
     <table class="line-table mt-12">
       <thead><tr><th>SKU quà</th><th>Tên</th><th class="num">GV/SP</th><th class="num">SL tặng</th><th class="num">GV quà tổng</th></tr></thead>
       <tbody id="gift_body"></tbody>
@@ -793,7 +813,7 @@ function renderGiftPanel() {
       <td><code style="background:var(--bg-soft); padding:2px 6px; border-radius:4px; font-size:11px;">${s.sku}</code></td>
       <td style="font-size:12px;">${s.ten}</td>
       <td class="num font-mono">${fmtNum(s.gv)}</td>
-      <td class="num"><input type="number" class="qty gift-qty" min="0" value="${sl}" data-sku="${skuId}"></td>
+      <td class="num"><input type="number" class="qty gift-qty" min="0" inputmode="numeric" step="1" value="${sl}" data-sku="${skuId}"></td>
       <td class="num font-mono">${fmtNum(s.gv * sl)}</td>
     `;
     body.appendChild(tr);

@@ -17,18 +17,58 @@ function getCkForOrder(nhom, ct_id, ck_override) {
   return group[ct.ck_nhan] || 0;
 }
 
-// Xác định bậc hiện tại
-function getCurrentTier(ct_id, dt_thuc, qty) {
+// Xác định bậc hiện tại (nhom cần cho SVIP nhom_only check)
+function getCurrentTier(ct_id, dt_thuc, qty, nhom) {
   const ct = PROGRAMS[ct_id];
   let active = null;
   for (const t of ct.tiers) {
+    // Check nhom_only: SVIP chỉ dành cho nhóm chỉ định
+    if (t.nhom_only && t.nhom_only !== nhom) continue;
+
     if (ct.tier_by === 'qty') {
       if (qty >= (t.min_qty || 0)) active = t;
     } else {
-      if (dt_thuc >= (t.min_dt_thuc || 0)) active = t;
+      // SVIP hỗ trợ OR: đạt dt_thuc HOẶC đạt qty (500 SP)
+      const dt_ok = dt_thuc >= (t.min_dt_thuc || 0);
+      const qty_ok = t.svip && qty >= 500;
+      if (dt_ok || qty_ok) active = t;
     }
   }
   return active;
+}
+
+// Tính tổng giá trị quà (NY) do Sale chọn
+function calcGiftNyValue(qua_user) {
+  if (!qua_user || !qua_user.length) return 0;
+  return qua_user.reduce((s, q) => {
+    const sku = skuById(q.sku);
+    return s + (sku ? sku.ny * q.sl : 0);
+  }, 0);
+}
+
+// Ngưỡng max (CK + quà)/NY theo nhãn CT — Sale nội bộ, không hiện cho KH
+const GIFT_MAX_PCT = {
+  Glanzen: { N1: 0.75, N2: 0.60, N3: 0.55, N4: 0.48, N5: 0.38 },
+  Laborie: { N1: 0.55, N2: 0.50, N3: 0.45, N4: 0.40, N5: 0.35 },
+  'Dr. For Skin': { N1: 0.55, N2: 0.52, N3: 0.50, N4: 0.48, N5: 0.45 },
+};
+
+// Kiểm tra gift vượt ngưỡng → trả {ok, pct_total, pct_max, over}
+function checkGiftLimit(state, pnl) {
+  const ct = PROGRAMS[state.ct_id];
+  if (!ct || !pnl.dt_ny) return { ok: true, pct_total: 0, pct_max: 1 };
+  const brand = ct.ck_nhan;
+  const maxMap = GIFT_MAX_PCT[brand];
+  const pct_max = maxMap ? (maxMap[state.nhom] || 0.55) : 0.55;
+  const gift_ny = calcGiftNyValue(state.qua_user);
+  const pct_total = (pnl.ck_kh_amount + gift_ny) / pnl.dt_ny;
+  return {
+    ok: pct_total <= pct_max,
+    pct_total: Math.round(pct_total * 1000) / 10,
+    pct_max: Math.round(pct_max * 1000) / 10,
+    over: pct_total > pct_max,
+    gift_ny,
+  };
 }
 
 // Tính giá vốn quà (có thể NV chưa chọn đủ, trả về upper bound theo gợi ý)
@@ -85,7 +125,7 @@ function calcPnL(state) {
     return { ...l, ten: sku.ten, nhan: sku.nhan, gia_ny, gia_sau_ck, thanh_tien, gv_line };
   }).filter(Boolean);
 
-  const tier = getCurrentTier(state.ct_id, dt_thuc, qty);
+  const tier = getCurrentTier(state.ct_id, dt_thuc, qty, state.nhom);
   const gv_qua = calcGiftCOGS(tier, state.ct_id, state.qua_user);
 
   const ck_kh_amount = dt_ny - dt_thuc;
