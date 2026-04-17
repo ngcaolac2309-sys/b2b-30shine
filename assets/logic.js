@@ -120,37 +120,13 @@ function checkGiftLimit(state, pnl) {
   };
 }
 
-// Tính giá vốn quà (có thể NV chưa chọn đủ, trả về upper bound theo gợi ý)
+// Tính giá vốn quà — chỉ tính khi Sale đã nhập/chọn quà, không ước fallback
 function calcGiftCOGS(tier, ct_id, qua_user) {
-  // qua_user: array {sku, sl} do NV nhập
-  if (qua_user && qua_user.length) {
-    return qua_user.reduce((s, q) => {
-      const sku = skuById(q.sku);
-      return s + (sku ? sku.gv * q.sl : 0);
-    }, 0);
-  }
-  // Fallback tính theo tier gợi ý
-  if (!tier) return 0;
-  let total = 0;
-  if (tier.qua) {
-    tier.qua.forEach(q => {
-      const sku = skuById(q.sku);
-      if (sku) total += sku.gv * q.sl;
-    });
-  }
-  if (tier.qua_fixed) {
-    tier.qua_fixed.forEach(q => {
-      const sku = skuById(q.sku);
-      if (sku) total += sku.gv * q.sl;
-    });
-  }
-  // Quà tuỳ chọn (CT2/CT3): ước bằng GV BQ
-  if (tier.qua_sl && !tier.qua_options) {
-    // Default Laborie 250ml BQ
-    const avg = 118948;
-    total += avg * tier.qua_sl;
-  }
-  return total;
+  if (!qua_user || !qua_user.length) return 0;
+  return qua_user.reduce((s, q) => {
+    const sku = skuById(q.sku);
+    return s + (sku ? sku.gv * q.sl : 0);
+  }, 0);
 }
 
 // Tính PnL đầy đủ từ order state
