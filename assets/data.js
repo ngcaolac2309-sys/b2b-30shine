@@ -93,6 +93,7 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5','NQ'],
     skus: ['SAP_GLZL60','SAP_080','GOM_016','GOM_017','XTP_009'],
     ck_nhan: 'Glanzen',
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 5_000_000,
         qua_text: '1 Sáp Claywax 60g + 1 Magic Spray',
@@ -103,6 +104,15 @@ const PROGRAMS = {
       { ten: 'Bậc 3', min_dt_thuc: 20_000_000,
         qua_text: '5 Sáp Claywax + 3 Magic Spray + 2 Booster cũ',
         qua: [{sku:'SAP_GLZ60', sl:5},{sku:'XD_009', sl:3},{sku:'XTP_007', sl:2}] },
+      { ten: 'SVIP', min_dt_thuc: 200_000_000, svip: true,
+        nhom_only: 'N1',
+        qua_text: 'Combo ~210 SP Glanzen (trị giá ~75tr NY) — mix theo nhu cầu KH',
+        qua_note: 'Điều kiện: Khách N1 · Đơn ≥ 500 SP hoặc DT thực ≥ 200tr · Tổng CK+quà = 75%',
+        qua: [
+          {sku:'SAP_GLZL60', sl:60}, {sku:'SAP_080', sl:30},
+          {sku:'GOM_016', sl:30}, {sku:'GOM_017', sl:30},
+          {sku:'XTP_009', sl:20}, {sku:'XD_009', sl:20}, {sku:'XTP_007', sl:20},
+        ] },
     ],
   },
 
@@ -112,6 +122,7 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5','NQ'],
     skus: ['SAP_GLZL60','SAP_080','GOM_016','GOM_017','XTP_009'],
     ck_nhan: 'Glanzen',
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 10_000_000,
         qua_text: '3 chai Laborie 250ml',
@@ -139,6 +150,7 @@ const PROGRAMS = {
     skus: ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'],
     ck_nhan: 'Laborie', ck_fixed: 0.50,
     tier_by: 'qty',
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_qty: 10,
         qua_text: 'Tặng 2 chai Laborie 250ml', qua_sl: 2 },
@@ -162,7 +174,7 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5'],
     skus: ['TC_005','SRM_097','SRM_104'],
     ck_nhan: 'Dr. For Skin',
-    // 3 bậc · Bậc 3: N1(40%)→gift ~12%→total 52% (dưới 55%)
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 5_000_000,
         qua_text: '1 Sáp Claywax 60g + 1 Magic Spray',
@@ -183,7 +195,7 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5'],
     skus: ['TC_005','SRM_097','SRM_104'],
     ck_nhan: 'Dr. For Skin',
-    // 5 bậc · VIP: N1(40%)→gift ~13%→total 53% (dưới 55%)
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 3_000_000,
         qua_text: '1 chai Laborie 250ml (chọn loại)',
@@ -210,7 +222,7 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5'],
     skus: ['TC_005','SRM_097','SRM_104'],
     ck_nhan: 'Dr. For Skin',
-    // 3 bậc · Bậc 3: N1(40%)→gift ~14%→total 54% (dưới 55%)
+    note: 'Quà tặng có thể thay đổi theo nhu cầu Khách hàng, liên hệ Sale phụ trách để được hỗ trợ tốt nhất.',
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 3_000_000,
         qua_text: '1 SRM Charcoal 100g',

@@ -151,6 +151,41 @@
   font-weight: 900; font-size: 16px; padding: 6px 12px; border-radius: 8px;
 }
 .tier-card-v2.vip .tier-head .badge-num { background: var(--gold); }
+
+/* SVIP — gold glow, bigger, gradient background */
+.tier-card-v2.svip {
+  border: 2px solid #D4A017;
+  background: linear-gradient(135deg, #FFF9E6 0%, #FDE68A 40%, #FFF9E6 100%);
+  box-shadow: 0 0 24px rgba(212, 160, 23, 0.25), var(--shadow);
+  grid-column: 1 / -1; /* full width */
+  padding: 28px;
+}
+.tier-card-v2.svip::before {
+  content: '👑 SVIP — ĐỐI TÁC CHIẾN LƯỢC'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, #D4A017, #B8860B); color: #fff; padding: 6px 24px;
+  border-radius: 100px; font-size: 12px; font-weight: 900; letter-spacing: 1px;
+  white-space: nowrap;
+}
+.tier-card-v2.svip .tier-head .badge-num {
+  background: linear-gradient(135deg, #D4A017, #B8860B); font-size: 18px;
+}
+.tier-card-v2.svip .tier-threshold-v2 { font-size: 36px; color: #B8860B; }
+.tier-card-v2.svip .tier-gift-desc { font-size: 15px; font-weight: 600; }
+.tier-svip-note {
+  margin-top: 10px; padding: 8px 12px;
+  background: rgba(255,255,255,0.7); border-radius: 6px;
+  font-size: 12px; color: #92400E; font-style: italic;
+  border-left: 3px solid #D4A017;
+}
+
+/* CT note box — ghi chú quà tặng */
+.ct-note-box {
+  margin-top: 16px; padding: 12px 16px;
+  background: #FFF9E6; border-radius: var(--radius-sm);
+  border-left: 3px solid #D4A017;
+  font-size: 13px; color: #92400E;
+}
+
 .tier-head .badge-label { font-weight: 700; color: var(--primary-dark); font-size: 14px; }
 .tier-threshold-v2 {
   font-family: var(--font-head); font-weight: 900; font-size: 28px;
@@ -547,20 +582,31 @@ function renderTiers(ct_id, container_id) {
   const c = document.getElementById(container_id);
   c.innerHTML = ct.tiers.map((t, i) => {
     const isVip = t.ten === 'VIP' || (ct_id === 'CT3' && i === ct.tiers.length - 1);
+    const isSvip = !!t.svip;
+    const cls = isSvip ? ' svip' : (isVip ? ' vip' : '');
     const threshold = ct.tier_by === 'qty'
       ? `<div class="tier-threshold-v2">${t.min_qty}</div><div class="tier-unit">chai mua</div>`
       : `<div class="tier-threshold-v2">${fmtNum(t.min_dt_thuc / 1_000_000)}M+</div><div class="tier-unit">đơn hàng (sau CK)</div>`;
+    const noteHtml = t.qua_note
+      ? `<div class="tier-svip-note">${t.qua_note}</div>` : '';
     return `
-      <div class="tier-card-v2${isVip ? ' vip' : ''}">
+      <div class="tier-card-v2${cls}">
         <div class="tier-head">
-          <span class="badge-num">${i+1}</span>
-          <span class="badge-label">${t.ten}</span>
+          <span class="badge-num">${isSvip ? '★' : i+1}</span>
+          <span class="badge-label">${t.ten}${t.nhom_only ? ' · Dành riêng ' + t.nhom_only : ''}</span>
         </div>
         ${threshold}
         <div class="tier-gift-label">🎁 Quà tặng</div>
         <div class="tier-gift-desc">${t.qua_text}</div>
+        ${noteHtml}
       </div>`;
   }).join('');
+
+  // Render note chung nếu CT có
+  if (ct.note) {
+    c.insertAdjacentHTML('afterend',
+      `<div class="ct-note-box">💡 <em>${ct.note}</em></div>`);
+  }
 }
 function renderSkusTable(ct_id, container_id, withCt3Price = false) {
   const ct = PROGRAMS[ct_id];
