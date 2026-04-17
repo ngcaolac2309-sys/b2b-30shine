@@ -955,9 +955,9 @@ tbody tr:last-child td { border-bottom: none; }
 .ck-stat.nq-none { opacity: 0.3; }
 .ck-stat .brand {
   font-size: 9px; font-weight: 800;
-  color: var(--text-muted); letter-spacing: 0.3px;
+  color: var(--text-muted); letter-spacing: 0.2px;
   text-transform: uppercase; margin-bottom: 4px;
-  line-height: 1.2; white-space: nowrap;
+  line-height: 1.15;
 }
 .ck-stat .pct {
   font-family: var(--font-head);

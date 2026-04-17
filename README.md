@@ -2,19 +2,19 @@
 
 Cổng thông tin chính sách giá & chương trình ưu đãi B2B / Nhượng Quyền 30Shine — Tháng 4/2026.
 
-## Pha A (hiện tại) — Static HTML trên GitHub Pages
+## Trang chính
 
-- `index.html` — Landing trang chủ
-- `bang-gia.html` — Bảng giá 3 nhãn (Glanzen / Laborie / Dr.FS) + CK theo nhóm
-- `chuong-trinh.html` — Chi tiết 3 chương trình CT1 / CT2 / CT3
-- `sale.html` — Sale Portal: tạo đơn, tự tính bậc, PnL realtime, xuất báo giá PDF
+- `index.html` — Landing page: 6 chương trình, 3 nhãn hàng, 5 bậc đại lý
+- `uu-dai.html` — Chi tiết 6 CT (CT1-CT6: Glanzen / Laborie / Dr. For Skin) + bảng CK 5 bậc
+- `sale.html` — Sale Portal: chọn KH (autocomplete), tạo đơn, PnL realtime, PDF báo giá
+- `admin.html` — Admin: Users, Khách hàng (97 KH, CK override, duyệt bậc), Master giá, Đơn hàng
+- `don-hang.html` — Lịch sử đơn hàng
+- `login.html` — Lark OAuth login
 
-## Pha B (sắp tới)
+## Backend
 
-- Lark OAuth login (Sale + Admin)
-- Cloudflare Worker proxy cho Lark Open API
-- Nút **Lưu nháp / Gửi báo giá / Chốt đơn** ghi Lark Base
-- Admin panel: sửa master giá, CK theo nhóm, user
+- Cloudflare Worker (`worker/worker.js`) — OAuth + CRUD Orders/Customers/Users/Master
+- Lark Base — 5 bảng: Users, MasterPrice, Orders, OrderLines, Customers
 
 ## Tech
 
