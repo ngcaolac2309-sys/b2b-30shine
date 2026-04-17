@@ -461,10 +461,40 @@ async function loadDraft() {
   }
 }
 
+// Fetch master prices từ Lark Base → override MASTER_PRICE (data.js là fallback)
+async function loadLiveMaster() {
+  try {
+    const list = await apiListMaster();
+    if (!list.length) return;
+    list.forEach(m => {
+      const sku = pickStr(m['Mã SKU']);
+      const existing = MASTER_PRICE.find(s => s.sku === sku);
+      if (existing) {
+        existing.gv = Number(m['Giá vốn']) || existing.gv;
+        existing.ny = Number(m['Giá NY']) || existing.ny;
+        existing.ten = pickStr(m['Tên SP']) || existing.ten;
+        existing.nhan = pickStr(m['Nhãn']) || existing.nhan;
+        // Per-SKU CK override từ Master (nếu admin set khác chuẩn nhãn)
+        existing._ck = {};
+        for (const n of ['N1','N2','N3','N4','N5']) {
+          const v = Number(m[`CK ${n}`]);
+          if (v > 0) existing._ck[n] = v;
+        }
+      }
+    });
+    console.log(`[LiveMaster] Updated ${list.length} SKUs from Lark Base`);
+  } catch (e) {
+    console.warn('[LiveMaster] Fallback to embedded data.js:', e.message);
+  }
+}
+
 initAuth().then(async ok => {
   if (!ok) return;
-  // Load customers cho dropdown
-  CUSTOMERS = await apiListCustomers();
+  // Load live data từ Lark Base
+  await Promise.all([
+    loadLiveMaster(),
+    apiListCustomers().then(c => { CUSTOMERS = c; }),
+  ]);
   await loadDraft();
 });
 
