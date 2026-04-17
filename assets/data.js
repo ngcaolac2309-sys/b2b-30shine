@@ -81,8 +81,7 @@ const GROUP_LADDER = ['N5', 'N4', 'N3', 'N2', 'N1'];
 // Nguyên tắc:
 // • CK tiền theo nhóm (bảng CK_GROUPS phía trên)
 // • Quà tặng tăng giá trị theo bậc đơn (DT thực hoặc SL)
-// • Bậc cuối cùng thiết kế sao cho N1: CK+quà ≈ 70% (Glanzen/Laborie)
-//   và max 55% (Dr. For Skin)
+// • Bậc cuối cùng có mức quà hấp dẫn nhất cho đối tác lớn
 // ══════════════════════════════════════════════════════════════════
 const PROGRAMS = {
 
@@ -106,8 +105,8 @@ const PROGRAMS = {
         qua: [{sku:'SAP_GLZ60', sl:5},{sku:'XD_009', sl:3},{sku:'XTP_007', sl:2}] },
       { ten: 'SVIP', min_dt_thuc: 200_000_000, svip: true,
         nhom_only: 'N1',
-        qua_text: 'Combo ~210 SP Glanzen (trị giá ~75tr NY) — mix theo nhu cầu KH',
-        qua_note: 'Điều kiện: Khách N1 · Đơn ≥ 500 SP hoặc DT thực ≥ 200tr · Tổng CK+quà = 75%',
+        qua_text: '60 Sáp Limited + 30 Sáp Prime + 30 Gôm Prime + 30 Gôm Original + 20 Booster X2 + 20 Magic Spray + 20 Booster cũ',
+        qua_note: 'Dành riêng khách N1 · Đơn ≥ 500 SP hoặc DT thực ≥ 200 triệu',
         qua: [
           {sku:'SAP_GLZL60', sl:60}, {sku:'SAP_080', sl:30},
           {sku:'GOM_016', sl:30}, {sku:'GOM_017', sl:30},
@@ -166,7 +165,6 @@ const PROGRAMS = {
 
   // ─── DR. FOR SKIN ──────────────────────────────────────────
   // CK chính Dr. For Skin: N5 30% · N4 33% · N3 35% · N2 38% · N1 40%
-  // Max CK + quà = 55%
 
   CT4: {
     ten: 'Dr. For Skin × Glanzen',
