@@ -93,7 +93,6 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5','NQ'],
     skus: ['SAP_GLZL60','SAP_080','GOM_016','GOM_017','XTP_009'],
     ck_nhan: 'Glanzen',
-    // 3 bậc · Bậc 3: N1(60%)→gift ~10%→total 70%
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 5_000_000,
         qua_text: '1 Sáp Claywax 60g + 1 Magic Spray',
@@ -102,8 +101,8 @@ const PROGRAMS = {
         qua_text: '3 Sáp Claywax 60g + 2 Magic Spray',
         qua: [{sku:'SAP_GLZ60', sl:3},{sku:'XD_009', sl:2}] },
       { ten: 'Bậc 3', min_dt_thuc: 20_000_000,
-        qua_text: '10 Sáp Claywax + 6 Magic Spray + 4 Booster cũ',
-        qua: [{sku:'SAP_GLZ60', sl:10},{sku:'XD_009', sl:6},{sku:'XTP_007', sl:4}] },
+        qua_text: '5 Sáp Claywax + 3 Magic Spray + 2 Booster cũ',
+        qua: [{sku:'SAP_GLZ60', sl:5},{sku:'XD_009', sl:3},{sku:'XTP_007', sl:2}] },
     ],
   },
 
@@ -113,10 +112,9 @@ const PROGRAMS = {
     nhom_apply: ['N1','N2','N3','N4','N5','NQ'],
     skus: ['SAP_GLZL60','SAP_080','GOM_016','GOM_017','XTP_009'],
     ck_nhan: 'Glanzen',
-    // 5 bậc · VIP: N1(60%)→gift ~10%→total 70%
     tiers: [
       { ten: 'Bậc 1', min_dt_thuc: 10_000_000,
-        qua_text: '3 chai Laborie 250ml (chọn loại)',
+        qua_text: '3 chai Laborie 250ml',
         qua_sl: 3, qua_options: ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'] },
       { ten: 'Bậc 2', min_dt_thuc: 20_000_000,
         qua_text: '5 Laborie 250ml + 2 Mask 100ml',
@@ -125,11 +123,11 @@ const PROGRAMS = {
         qua_text: '8 Laborie + 3 Mask + 2 Serum 30ml',
         qua_sl: 8, qua_fixed: [{sku:'MN_046', sl:3},{sku:'TD_053', sl:2}] },
       { ten: 'Bậc 4', min_dt_thuc: 50_000_000,
-        qua_text: '12 Laborie + 5 Mask + 3 Serum',
+        qua_text: '12 Laborie + 5 Mask + 3 Serum 30ml',
         qua_sl: 12, qua_fixed: [{sku:'MN_046', sl:5},{sku:'TD_053', sl:3}] },
       { ten: 'VIP', min_dt_thuc: 80_000_000,
-        qua_text: '30 Laborie + 8 Mask + 5 Serum + 5 Hair Oil',
-        qua_sl: 30, qua_fixed: [{sku:'MN_046', sl:8},{sku:'TD_053', sl:5},{sku:'TD_054', sl:5}] },
+        qua_text: '20 Laborie + 5 Mask + 3 Serum + 1 Mask 500ml',
+        qua_sl: 20, qua_fixed: [{sku:'MN_046', sl:5},{sku:'TD_053', sl:3}] },
     ],
   },
 
@@ -141,7 +139,6 @@ const PROGRAMS = {
     skus: ['DG_269','DG_273','DG_272','DX_201','TD_054','MN_046','TD_053'],
     ck_nhan: 'Laborie', ck_fixed: 0.50,
     tier_by: 'qty',
-    // 4 bậc · Bậc 4: tăng quà so với trước (45 chai + 8 Mask)
     tiers: [
       { ten: 'Bậc 1', min_qty: 10,
         qua_text: 'Tặng 2 chai Laborie 250ml', qua_sl: 2 },
@@ -150,9 +147,8 @@ const PROGRAMS = {
       { ten: 'Bậc 3', min_qty: 50,
         qua_text: 'Tặng 15 chai Laborie 250ml', qua_sl: 15 },
       { ten: 'Bậc 4', min_qty: 100,
-        qua_text: 'Tặng 45 chai + 8 Mask 100ml',
-        qua_sl: 45, qua_fixed: [{sku:'MN_046', sl:8}] },
-      // Bậc 4: mua 100 → nhận 100+45+8 = 153 SP · hiệu quả 68.6%/SP
+        qua_text: 'Tặng 35 chai + 5 Mask 100ml',
+        qua_sl: 35, qua_fixed: [{sku:'MN_046', sl:5}] },
     ],
   },
 
