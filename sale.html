@@ -38,8 +38,9 @@ body.auth-ok { visibility: visible; }
   border-radius: 50%; font-size: 13px; font-weight: 700; margin-right: 8px;
 }
 .ct-pick {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
 }
+@media (min-width: 900px) { .ct-pick { grid-template-columns: repeat(4, 1fr); } }
 .ct-option {
   padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
   cursor: pointer; transition: all 0.15s; background: #fff;
@@ -227,6 +228,10 @@ body.auth-ok { visibility: visible; }
             <h4>CT3 • Laborie Xả Kho</h4>
             <p>Tất cả · Giá 201k/chai, tặng theo SL</p>
           </div>
+          <div class="ct-option" data-ct="CT4">
+            <h4>CT4 • Dr. For Skin × Dr. For Skin</h4>
+            <p>Tất cả · Mua Dr. For Skin tặng Dr. For Skin</p>
+          </div>
         </div>
         <div id="ct_warn"></div>
       </div>
@@ -301,7 +306,7 @@ const state = {
   ct_id: null, nhom: null,
   kh_ten: '', kh_sdt: '', sale_name: '',
   kh_cust: null,    // Customer record được chọn (từ dropdown)
-  ck_override: null,// {Glanzen, Laborie, 'Dr.FS'} nếu KH có CK riêng
+  ck_override: null,// {Glanzen, Laborie, 'Dr. For Skin'} nếu KH có CK riêng
   ship_addr: '',    // Địa chỉ giao cho đơn này
   ship_phone: '',   // SĐT nhận
   ship_receiver: '',// Tên người nhận
@@ -475,14 +480,14 @@ function selectCustomer(c) {
   // CK override
   const ckG = c['CK Glanzen (override)'];
   const ckL = c['CK Laborie (override)'];
-  const ckD = c['CK Dr.FS (override)'];
+  const ckD = c['CK Dr. For Skin (override)'];
   const has_override = (typeof ckG === 'number' && ckG > 0) ||
                        (typeof ckL === 'number' && ckL > 0) ||
                        (typeof ckD === 'number' && ckD > 0);
   state.ck_override = has_override ? {
     Glanzen: typeof ckG === 'number' && ckG > 0 ? ckG : null,
     Laborie: typeof ckL === 'number' && ckL > 0 ? ckL : null,
-    'Dr.FS': typeof ckD === 'number' && ckD > 0 ? ckD : null,
+    'Dr. For Skin': typeof ckD === 'number' && ckD > 0 ? ckD : null,
   } : null;
 
   // Fill form
@@ -512,7 +517,7 @@ function selectCustomer(c) {
     const parts = [];
     if (state.ck_override.Glanzen) parts.push(`Glanzen ${(state.ck_override.Glanzen*100).toFixed(0)}%`);
     if (state.ck_override.Laborie) parts.push(`Laborie ${(state.ck_override.Laborie*100).toFixed(0)}%`);
-    if (state.ck_override['Dr.FS']) parts.push(`Dr.FS ${(state.ck_override['Dr.FS']*100).toFixed(0)}%`);
+    if (state.ck_override['Dr. For Skin']) parts.push(`Dr. For Skin ${(state.ck_override['Dr. For Skin']*100).toFixed(0)}%`);
     bgs.push(`<span class="tag tag-override">⚙️ CK riêng: ${parts.join(' · ')}</span>`);
   }
   document.getElementById('kh_i_badges').innerHTML = bgs.join('');

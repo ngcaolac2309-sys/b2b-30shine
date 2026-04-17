@@ -3,7 +3,7 @@
 ============================================ */
 
 // Tính CK áp cho nhóm × CT (có thể bị override theo KH)
-// ck_override: {Glanzen, Laborie, 'Dr.FS'} — nếu có giá trị > 0 thì ưu tiên hơn nhóm
+// ck_override: {Glanzen, Laborie, 'Dr. For Skin'} — nếu có giá trị > 0 thì ưu tiên hơn nhóm
 function getCkForOrder(nhom, ct_id, ck_override) {
   const ct = PROGRAMS[ct_id];
   if (!ct) return 0;
