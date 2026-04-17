@@ -40,7 +40,7 @@ body.auth-ok { visibility: visible; }
 .ct-pick {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
 }
-@media (min-width: 900px) { .ct-pick { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px) { .ct-pick { grid-template-columns: repeat(3, 1fr); } }
 .ct-option {
   padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
   cursor: pointer; transition: all 0.15s; background: #fff;
@@ -218,19 +218,27 @@ body.auth-ok { visibility: visible; }
         <div class="ct-pick" id="ct_pick">
           <div class="ct-option" data-ct="CT1">
             <h4>CT1 • Glanzen × Glanzen</h4>
-            <p>N3-N5 · Mua Glanzen tặng Glanzen</p>
+            <p>Mua Glanzen — Tặng Glanzen</p>
           </div>
           <div class="ct-option" data-ct="CT2">
             <h4>CT2 • Glanzen × Laborie</h4>
-            <p>N1-N2 · Mua Glanzen tặng Laborie</p>
+            <p>Mua Glanzen — Tặng Laborie Premium</p>
           </div>
           <div class="ct-option" data-ct="CT3">
             <h4>CT3 • Laborie Xả Kho</h4>
-            <p>Tất cả · Giá 201k/chai, tặng theo SL</p>
+            <p>Giá 201k/chai — Tặng kèm theo SL</p>
           </div>
           <div class="ct-option" data-ct="CT4">
-            <h4>CT4 • Dr. For Skin × Dr. For Skin</h4>
-            <p>Tất cả · Mua Dr. For Skin tặng Dr. For Skin</p>
+            <h4>CT4 • Dr. For Skin × Glanzen</h4>
+            <p>Mua Dr. For Skin — Tặng Glanzen</p>
+          </div>
+          <div class="ct-option" data-ct="CT5">
+            <h4>CT5 • Dr. For Skin × Laborie</h4>
+            <p>Mua Dr. For Skin — Tặng Laborie</p>
+          </div>
+          <div class="ct-option" data-ct="CT6">
+            <h4>CT6 • Dr. For Skin × Dr. For Skin</h4>
+            <p>Mua Dr. For Skin — Tặng Dr. For Skin</p>
           </div>
         </div>
         <div id="ct_warn"></div>
