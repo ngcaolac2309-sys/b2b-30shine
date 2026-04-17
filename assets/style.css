@@ -946,19 +946,24 @@ tbody tr:last-child td { border-bottom: none; }
 .ck-stat {
   background: var(--bg-soft);
   border-radius: 8px;
-  padding: 10px 8px;
+  padding: 10px 6px;
   text-align: center;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 68px;
 }
 .ck-stat.nq-none { opacity: 0.3; }
 .ck-stat .brand {
-  font-size: 10px; font-weight: 800;
-  color: var(--text-muted); letter-spacing: 0.5px;
-  text-transform: uppercase; margin-bottom: 2px;
+  font-size: 9px; font-weight: 800;
+  color: var(--text-muted); letter-spacing: 0.3px;
+  text-transform: uppercase; margin-bottom: 4px;
+  line-height: 1.2; white-space: nowrap;
 }
 .ck-stat .pct {
   font-family: var(--font-head);
-  font-weight: 900; font-size: 20px;
+  font-weight: 900; font-size: 22px;
   color: var(--primary);
+  line-height: 1;
 }
 .ck-ladder-card.vip .ck-stat .pct {
   background: var(--gold); -webkit-background-clip: text; background-clip: text;
