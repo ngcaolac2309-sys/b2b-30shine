@@ -53,6 +53,55 @@ const GIFT_MAX_PCT = {
   'Dr. For Skin': { N1: 0.55, N2: 0.52, N3: 0.50, N4: 0.48, N5: 0.45 },
 };
 
+// Tính quà đề xuất thực tế (scale theo order NY, đảm bảo không vượt ngưỡng)
+// Trả [{sku, sl, ten}] — SL đã scale + round
+function calcSuggestedGifts(state, pnl) {
+  const ct = PROGRAMS[state.ct_id];
+  const tier = pnl.tier;
+  if (!tier || !pnl.dt_ny) return [];
+
+  const brand = ct.ck_nhan;
+  const maxMap = GIFT_MAX_PCT[brand];
+  const pct_max = maxMap ? (maxMap[state.nhom] || 0.55) : 0.55;
+  const ck = pnl.ck_kh;
+
+  // Budget quà (NY) = (max% - CK%) × order NY
+  const gift_budget = Math.max(0, (pct_max - ck) * pnl.dt_ny);
+
+  // Thu thập danh sách quà gốc từ tier
+  let base_gifts = [];
+  if (tier.qua) {
+    base_gifts = tier.qua.map(q => ({ sku: q.sku, sl: q.sl }));
+  }
+  if (tier.qua_fixed) {
+    tier.qua_fixed.forEach(q => base_gifts.push({ sku: q.sku, sl: q.sl }));
+  }
+  if (tier.qua_sl) {
+    // Quà tự chọn: ước bằng Laborie BQ 402k NY
+    const opts = tier.qua_options || ['DG_269','DG_273','DG_272'];
+    const per = Math.ceil(tier.qua_sl / opts.length);
+    opts.forEach(sku => base_gifts.push({ sku, sl: per }));
+  }
+  if (!base_gifts.length) return [];
+
+  // Tính tổng NY gốc của danh sách quà
+  let base_total_ny = 0;
+  base_gifts.forEach(g => {
+    const s = skuById(g.sku);
+    if (s) base_total_ny += s.ny * g.sl;
+  });
+  if (base_total_ny <= 0) return [];
+
+  // Scale ratio: nếu tổng NY gốc > budget → scale xuống
+  const ratio = base_total_ny <= gift_budget ? 1 : gift_budget / base_total_ny;
+
+  return base_gifts.map(g => {
+    const s = skuById(g.sku);
+    const scaled = Math.max(0, Math.round(g.sl * ratio));
+    return { sku: g.sku, sl: scaled, ten: s ? s.ten : g.sku };
+  }).filter(g => g.sl > 0);
+}
+
 // Kiểm tra gift vượt ngưỡng → trả {ok, pct_total, pct_max, over}
 function checkGiftLimit(state, pnl) {
   const ct = PROGRAMS[state.ct_id];

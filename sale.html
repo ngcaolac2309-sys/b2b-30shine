@@ -766,12 +766,16 @@ function renderGiftPanel() {
     wrap.innerHTML = '<div class="alert alert-warn">Chưa đủ ngưỡng bậc quà tặng — tăng SL đặt hàng để nhận quà.</div>';
     return;
   }
-  let fixed_html = '';
-  if (tier.qua) {
-    fixed_html = `<div class="alert alert-info"><b>Gợi ý quà (${tier.ten}):</b> ${tier.qua_text}</div>`;
-  } else {
-    fixed_html = `<div class="alert alert-info"><b>Bậc ${tier.ten}:</b> ${tier.qua_text}</div>`;
-  }
+  // Tính quà đề xuất thực tế (đã scale theo NY đơn)
+  const suggested = calcSuggestedGifts(state, p);
+  const suggestText = suggested.length
+    ? suggested.map(g => `${g.sl} ${g.ten.split(' ').slice(0,3).join(' ')}`).join(' + ')
+    : tier.qua_text;
+
+  let fixed_html = `<div class="alert alert-info">
+    <b>Bậc ${tier.ten}${tier.nhom_only ? ' · ' + tier.nhom_only : ''}:</b> ${suggestText}
+    ${tier.qua_note ? `<div style="font-size:12px; margin-top:4px; color:#92400E;">${tier.qua_note}</div>` : ''}
+  </div>`;
   // Cho NV chọn SKU quà (all SKU in CT, plus gifts)
   const ct = PROGRAMS[state.ct_id];
   let gift_skus = new Set();
@@ -796,7 +800,11 @@ function renderGiftPanel() {
       ? `<div class="gift-warn-bar ok">✅ Tổng CK+quà: <b>${giftCheck.pct_total}%</b> / ${giftCheck.pct_max}% (còn ${(giftCheck.pct_max - giftCheck.pct_total).toFixed(1)}% dư)</div>`
       : '');
 
-  wrap.innerHTML = fixed_html + warnHtml + `
+  const fillBtn = suggested.length
+    ? `<button type="button" class="btn btn-outline btn-sm" id="btn_fill_gift" style="margin-top:8px;">📋 Áp quà đề xuất tự động</button>`
+    : '';
+
+  wrap.innerHTML = fixed_html + fillBtn + warnHtml + `
     <table class="line-table mt-12">
       <thead><tr><th>SKU quà</th><th>Tên</th><th class="num">GV/SP</th><th class="num">SL tặng</th><th class="num">GV quà tổng</th></tr></thead>
       <tbody id="gift_body"></tbody>
@@ -829,6 +837,15 @@ function renderGiftPanel() {
       refresh();
     });
   });
+
+  // Nút "Áp quà đề xuất"
+  const fillBtnEl = document.getElementById('btn_fill_gift');
+  if (fillBtnEl) {
+    fillBtnEl.addEventListener('click', () => {
+      state.qua_user = suggested.map(g => ({ sku: g.sku, sl: g.sl }));
+      refresh();
+    });
+  }
 }
 
 function refresh() {
