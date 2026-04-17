@@ -973,10 +973,18 @@ function openQuotePreview(s, p) {
       <td class="num">${l.sl}</td>
       <td class="num strong">${fmtNum(l.thanh_tien)}</td>
     </tr>`).join('');
-  const giftHtml = (s.qua_user || []).map((q, i) => {
+  let giftTotalNy = 0;
+  const giftHtml = (s.qua_user || []).filter(q => q.sl > 0).map((q, i) => {
     const sku = skuById(q.sku);
-    return `<tr><td class="idx">${i+1}</td><td><code>${sku.sku}</code></td><td>${sku.ten}</td><td class="num">${q.sl}</td></tr>`;
+    if (!sku) return '';
+    const lineNy = sku.ny * q.sl;
+    giftTotalNy += lineNy;
+    return `<tr><td class="idx">${i+1}</td><td><code>${sku.sku}</code></td><td>${sku.ten}</td><td class="num">${fmtNum(sku.ny)}</td><td class="num">${q.sl}</td><td class="num">${fmtNum(lineNy)}</td></tr>`;
   }).join('');
+  const giftSummaryText = (s.qua_user || []).filter(q => q.sl > 0).map(q => {
+    const sku = skuById(q.sku);
+    return `${q.sl} ${sku ? sku.ten.split(' ').slice(0,3).join(' ') : q.sku}`;
+  }).join(' + ');
 
   w.document.write(`<!DOCTYPE html><html lang="vi"><head>
 <meta charset="UTF-8">
@@ -1320,11 +1328,12 @@ function openQuotePreview(s, p) {
     </div>
     <div class="gift-box">
       <div class="gift-title">
-        <h3>🎁 ${p.tier ? p.tier.qua_text : 'Quà tặng'}</h3>
+        <h3>🎁 ${giftSummaryText}</h3>
       </div>
       <table>
-        <thead><tr><th class="idx">#</th><th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Số lượng</th></tr></thead>
+        <thead><tr><th class="idx">#</th><th>Mã SKU</th><th>Tên sản phẩm</th><th class="num">Giá NY</th><th class="num">SL</th><th class="num">Trị giá NY</th></tr></thead>
         <tbody>${giftHtml}</tbody>
+        <tfoot><tr><td colspan="4"></td><td class="num strong" style="border-top:2px solid var(--primary);">Tổng</td><td class="num strong" style="border-top:2px solid var(--primary); color:var(--gold-solid);">${fmtMoney(giftTotalNy)}</td></tr></tfoot>
       </table>
     </div>` : ''}
 
