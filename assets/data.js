@@ -2,25 +2,26 @@
    MASTER DATA — Embedded for Pha A (sẽ fetch từ Lark Base ở Pha B)
 ============================================ */
 
+// Giá vốn BQGQ cập nhật từ Sổ chi tiết VTHH 01-15/03/2026
 const MASTER_PRICE = [
-  { sku: 'SAP_GLZL60',  nhan: 'Glanzen', ten: 'Sáp Glanzen Claywax Limited 60g',           gv: 50613, ny: 500000 },
-  { sku: 'SAP_080',     nhan: 'Glanzen', ten: 'Sáp Glanzen Prime Sandar wood',              gv: 47400, ny: 349000 },
-  { sku: 'GOM_016',     nhan: 'Glanzen', ten: 'Gôm tạo kiểu Glanzen Prime Floral 380ml',    gv: 41339, ny: 349000 },
-  { sku: 'GOM_017',     nhan: 'Glanzen', ten: 'Gôm tạo kiểu Glanzen Original 380ml',        gv: 41312, ny: 249000 },
-  { sku: 'XTP_009',     nhan: 'Glanzen', ten: 'Xịt tạo phồng Glanzen 2025 X2 Booster 200ml', gv: 53569, ny: 340000 },
-  { sku: 'SAP_GLZ60',   nhan: 'Glanzen', ten: 'Sáp Glanzen Claywax 60g (gốc)',              gv: 51248, ny: 249000 },
-  { sku: 'XTP_007',     nhan: 'Glanzen', ten: 'Xịt tạo phồng Glanzen Booster 200ml (cũ)',    gv: 28072, ny: 249000 },
-  { sku: 'XD_009',      nhan: 'Glanzen', ten: 'Xịt dưỡng tóc Glanzen Magic Spray 200ml',     gv: 28089, ny: 229000 },
-  { sku: 'DG_269',      nhan: 'Laborie', ten: 'Bond Shampoo 250ml',                          gv: 123292, ny: 402000 },
-  { sku: 'DG_273',      nhan: 'Laborie', ten: 'Detox Shampoo 250ml',                         gv: 123655, ny: 402000 },
-  { sku: 'DG_272',      nhan: 'Laborie', ten: 'Scalp Shampoo 250ml',                         gv: 115263, ny: 402000 },
-  { sku: 'DX_201',      nhan: 'Laborie', ten: 'Bond Conditioner 250ml',                      gv: 124974, ny: 402000 },
-  { sku: 'TD_054',      nhan: 'Laborie', ten: 'Lipid Bond Hair Oil 30ml',                    gv: 115026, ny: 402000 },
+  { sku: 'SAP_GLZL60',  nhan: 'Glanzen', ten: 'Sáp Glanzen Claywax Limited 60g',           gv: 51395, ny: 500000 },
+  { sku: 'SAP_080',     nhan: 'Glanzen', ten: 'Sáp Glanzen Prime Sandar wood',              gv: 47849, ny: 349000 },
+  { sku: 'GOM_016',     nhan: 'Glanzen', ten: 'Gôm tạo kiểu Glanzen Prime Floral 380ml',    gv: 41396, ny: 349000 },
+  { sku: 'GOM_017',     nhan: 'Glanzen', ten: 'Gôm tạo kiểu Glanzen Original 380ml',        gv: 41395, ny: 249000 },
+  { sku: 'XTP_009',     nhan: 'Glanzen', ten: 'Xịt tạo phồng Glanzen 2025 X2 Booster 200ml', gv: 56021, ny: 340000 },
+  { sku: 'SAP_GLZ60',   nhan: 'Glanzen', ten: 'Sáp Glanzen Claywax 60g (gốc)',              gv: 52329, ny: 249000 },
+  { sku: 'XTP_007',     nhan: 'Glanzen', ten: 'Xịt tạo phồng Glanzen Booster 200ml (cũ)',    gv: 28082, ny: 249000 },
+  { sku: 'XD_009',      nhan: 'Glanzen', ten: 'Xịt dưỡng tóc Glanzen Magic Spray 200ml',     gv: 28542, ny: 229000 },
+  { sku: 'DG_269',      nhan: 'Laborie', ten: 'Bond Shampoo 250ml',                          gv: 119544, ny: 402000 },
+  { sku: 'DG_273',      nhan: 'Laborie', ten: 'Detox Shampoo 250ml',                         gv: 115528, ny: 402000 },
+  { sku: 'DG_272',      nhan: 'Laborie', ten: 'Scalp Shampoo 250ml',                         gv: 115264, ny: 402000 },
+  { sku: 'DX_201',      nhan: 'Laborie', ten: 'Bond Conditioner 250ml',                      gv: 115182, ny: 402000 },
+  { sku: 'TD_054',      nhan: 'Laborie', ten: 'Lipid Bond Hair Oil 30ml',                    gv: 115267, ny: 402000 },
   { sku: 'MN_046',      nhan: 'Laborie', ten: 'Molecular Repair Mask 100ml',                 gv: 115182, ny: 402000 },
-  { sku: 'TD_053',      nhan: 'Laborie', ten: 'Molecular Repair Serum 30ml',                 gv: 115241, ny: 402000 },
-  { sku: 'TC_005',      nhan: 'Dr. For Skin',   ten: 'Dabo Black Force Serum 120ml',                gv: 124308, ny: 629000 },
-  { sku: 'SRM_097',     nhan: 'Dr. For Skin',   ten: 'SRM Teatrea 100g',                            gv: 61705, ny: 349000 },
-  { sku: 'SRM_104',     nhan: 'Dr. For Skin',   ten: 'SRM Charcoal 100g',                           gv: 61863, ny: 229000 },
+  { sku: 'TD_053',      nhan: 'Laborie', ten: 'Molecular Repair Serum 30ml',                 gv: 115182, ny: 402000 },
+  { sku: 'TC_005',      nhan: 'Dr. For Skin',   ten: 'Dabo Black Force Serum 120ml',                gv: 124256, ny: 629000 },
+  { sku: 'SRM_097',     nhan: 'Dr. For Skin',   ten: 'SRM Teatrea 100g',                            gv: 61996, ny: 349000 },
+  { sku: 'SRM_104',     nhan: 'Dr. For Skin',   ten: 'SRM Charcoal 100g',                           gv: 61831, ny: 229000 },
 ];
 
 // CK cố định theo nhóm KH × nhãn
