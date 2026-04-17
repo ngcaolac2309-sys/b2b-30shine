@@ -1011,7 +1011,9 @@ function updatePnL() {
   const st = document.getElementById('pnl_status');
   st.textContent = s.text;
   st.className = `pnl-status ${s.cls}`;
-  document.getElementById('btn_preview').disabled = !(p.dt_ny > 0);
+  const hasOrder = p.dt_ny > 0;
+  document.getElementById('btn_preview').disabled = !hasOrder;
+  document.getElementById('btn_finalize').disabled = !hasOrder;
   // Update gift warning bar nếu có
   const warnEl = document.querySelector('.gift-warn-bar');
   if (warnEl) {
