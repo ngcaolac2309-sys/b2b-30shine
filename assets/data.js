@@ -237,8 +237,9 @@ const PROGRAMS = {
 
 // Chi phí vận hành (ước)
 const COST_CONFIG = {
-  ck_nv: 0.04,      // hoa hồng NV (trên DT thực thu)
-  van_hanh: 0.05,   // chi phí kho/VC (trên DT thực thu)
+  vat_rate: 0.08,    // VAT 8% — DT chưa VAT = DT có VAT / (1 + vat_rate)
+  ck_nv: 0.04,       // hoa hồng NV (trên DT chưa VAT)
+  van_hanh: 0.05,    // chi phí kho/VC (trên DT chưa VAT)
   muc_tieu_ln_ny: 0.15,
 };
 

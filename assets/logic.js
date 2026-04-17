@@ -177,13 +177,19 @@ function calcPnL(state) {
   const tier = getCurrentTier(state.ct_id, dt_thuc, qty, state.nhom);
   const gv_qua = calcGiftCOGS(tier, state.ct_id, state.qua_user);
 
-  const ck_kh_amount = dt_ny - dt_thuc;
-  const ck_nv = dt_thuc * COST_CONFIG.ck_nv;
-  const van_hanh = dt_thuc * COST_CONFIG.van_hanh;
-  const gm = dt_ny - ck_kh_amount - cogs;
+  // Tách VAT: DT chưa VAT = DT có VAT / (1 + VAT rate)
+  const vat_div = 1 + (COST_CONFIG.vat_rate || 0);
+  const dt_ny_ex = dt_ny / vat_div;         // DT NY chưa VAT
+  const dt_thuc_ex = dt_thuc / vat_div;     // DT thực chưa VAT
+  const vat_amount = dt_thuc - dt_thuc_ex;  // VAT output phải nộp
+
+  const ck_kh_amount = dt_ny - dt_thuc;     // CK KH (trên giá có VAT — cho KH thấy)
+  const ck_nv = dt_thuc_ex * COST_CONFIG.ck_nv;     // hoa hồng trên DT chưa VAT
+  const van_hanh = dt_thuc_ex * COST_CONFIG.van_hanh; // vận hành trên DT chưa VAT
+  const gm = dt_thuc_ex - cogs;             // Gross margin (chưa VAT - chưa VAT)
   const ln_thuan = gm - ck_nv - van_hanh - gv_qua;
-  const pct_ln_ny = dt_ny > 0 ? ln_thuan / dt_ny : 0;
-  const pct_ln_thuc = dt_thuc > 0 ? ln_thuan / dt_thuc : 0;
+  const pct_ln_ny = dt_ny > 0 ? ln_thuan / dt_ny : 0;       // % trên NY có VAT (KH thấy)
+  const pct_ln_thuc = dt_thuc_ex > 0 ? ln_thuan / dt_thuc_ex : 0; // % trên DT chưa VAT
 
   return {
     ct_id: state.ct_id,
@@ -193,8 +199,8 @@ function calcPnL(state) {
     lines: lines_detail,
     tier,
     qty,
-    dt_ny, dt_thuc, ck_kh_amount,
-    cogs, ck_nv, van_hanh, gv_qua,
+    dt_ny, dt_thuc, dt_thuc_ex, vat_amount,
+    ck_kh_amount, cogs, ck_nv, van_hanh, gv_qua,
     gm, ln_thuan, pct_ln_ny, pct_ln_thuc,
   };
 }

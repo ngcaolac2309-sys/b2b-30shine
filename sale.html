@@ -287,11 +287,16 @@ body.auth-ok { visibility: visible; }
           <div class="tier-badge" id="pnl_tier">Chưa đủ bậc</div>
         </div>
         <div class="pnl-body" id="pnl_body">
-          <div class="pnl-row"><span class="lbl">DT niêm yết</span><span class="val" id="pnl_ny">0</span></div>
+          <div class="pnl-row"><span class="lbl">DT niêm yết (có VAT)</span><span class="val" id="pnl_ny">0</span></div>
           <div class="pnl-row neg"><span class="lbl">− CK KH</span><span class="val" id="pnl_ck">0</span></div>
           <div class="pnl-row" style="background:#FFF9E6; margin:6px -20px; padding:10px 20px;">
-            <span class="lbl" style="font-weight:600;">= DT thực thu</span>
+            <span class="lbl" style="font-weight:600;">= KH thanh toán (có VAT)</span>
             <span class="val" id="pnl_thuc">0</span>
+          </div>
+          <div class="pnl-row neg" style="font-size:12px;"><span class="lbl">− VAT output (8%)</span><span class="val" id="pnl_vat">0</span></div>
+          <div class="pnl-row" style="border-top:1px dashed var(--border); padding-top:8px;">
+            <span class="lbl" style="font-size:12px; color:var(--text-soft);">= DT chưa VAT</span>
+            <span class="val" id="pnl_thuc_ex" style="font-size:13px;">0</span>
           </div>
           <div class="pnl-row neg"><span class="lbl">− Giá vốn hàng bán</span><span class="val" id="pnl_cogs">0</span></div>
           <div class="pnl-row neg"><span class="lbl">− CK NV (4%)</span><span class="val" id="pnl_nv">0</span></div>
@@ -989,6 +994,8 @@ function updatePnL() {
   document.getElementById('pnl_ny').textContent = fmtMoney(p.dt_ny);
   document.getElementById('pnl_ck').textContent = fmtMoney(-p.ck_kh_amount);
   document.getElementById('pnl_thuc').textContent = fmtMoney(p.dt_thuc);
+  document.getElementById('pnl_vat').textContent = fmtMoney(-p.vat_amount);
+  document.getElementById('pnl_thuc_ex').textContent = fmtMoney(p.dt_thuc_ex);
   document.getElementById('pnl_cogs').textContent = fmtMoney(-p.cogs);
   document.getElementById('pnl_nv').textContent = fmtMoney(-p.ck_nv);
   document.getElementById('pnl_vh').textContent = fmtMoney(-p.van_hanh);
@@ -1023,7 +1030,7 @@ function refresh() {
     document.getElementById('pnl_tier').textContent = 'Chưa đủ bậc';
     document.getElementById('pnl_status').textContent = 'Chưa có đơn';
     document.getElementById('pnl_status').className = 'pnl-status fail';
-    ['pnl_ny','pnl_ck','pnl_thuc','pnl_cogs','pnl_nv','pnl_vh','pnl_qua','pnl_ln'].forEach(id => {
+    ['pnl_ny','pnl_ck','pnl_thuc','pnl_vat','pnl_thuc_ex','pnl_cogs','pnl_nv','pnl_vh','pnl_qua','pnl_ln'].forEach(id => {
       document.getElementById(id).textContent = '0';
     });
     return;
