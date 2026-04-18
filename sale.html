@@ -275,6 +275,17 @@ body.auth-ok { visibility: visible; }
 
       <div class="actions-bar">
         <span id="order_status" style="margin-right:auto; color:var(--text-muted); font-size:13px;"></span>
+        <span id="admin_status_box" style="display:none; margin-right:12px; font-size:13px;">
+          <label style="color:var(--text-muted); margin-right:6px;">Trạng thái (admin):</label>
+          <select id="admin_status_sel" class="form-select" style="display:inline-block; width:auto; padding:6px 10px;">
+            <option>Nháp</option>
+            <option>Báo giá</option>
+            <option>Chốt đơn</option>
+            <option>Đã giao</option>
+            <option>Đã TT</option>
+            <option>Huỷ</option>
+          </select>
+        </span>
         <button class="btn btn-outline" id="btn_draft" disabled>💾 Lưu nháp</button>
         <button class="btn btn-primary" id="btn_preview" disabled>📄 Xuất báo giá PDF</button>
         <button class="btn btn-success" id="btn_finalize" disabled>✅ Chốt đơn</button>
@@ -461,11 +472,44 @@ async function loadDraft() {
     else state.qua_user.push({ sku, sl });
   });
   refresh();
-  document.getElementById('order_status').innerHTML = `Đơn: <b>${state.ma_don}</b> · <span class="badge badge-${state.status==='Chốt đơn'?'success':(state.status==='Báo giá'?'warn':'primary')}">${state.status}</span>`;
-  if (state.status === 'Chốt đơn' || state.status === 'Đã giao' || state.status === 'Đã TT') {
-    document.getElementById('btn_draft').disabled = true;
-    document.getElementById('btn_finalize').disabled = true;
+  applyOrderLock();
+}
+
+// Logic lock theo trạng thái + role
+function applyOrderLock() {
+  const st = state.status || 'Nháp';
+  const isAdmin = CURRENT_USER && CURRENT_USER.role === 'admin';
+  const isFullyLocked = (st === 'Đã giao' || st === 'Đã TT' || st === 'Huỷ');
+  const isChotDon = (st === 'Chốt đơn');
+
+  // Badge hiển thị trạng thái
+  const badgeClass = st === 'Chốt đơn' ? 'success' :
+                     st === 'Đã giao' || st === 'Đã TT' ? 'accent' :
+                     st === 'Báo giá' ? 'warn' : 'primary';
+  document.getElementById('order_status').innerHTML =
+    `Đơn: <b>${state.ma_don}</b> · <span class="badge badge-${badgeClass}">${st}</span>`;
+
+  // Admin status dropdown — hiện khi đơn đã tồn tại + chưa Đã giao/TT
+  const adminBox = document.getElementById('admin_status_box');
+  if (isAdmin && state.record_id && !isFullyLocked) {
+    adminBox.style.display = '';
+    document.getElementById('admin_status_sel').value = st;
+  } else {
+    adminBox.style.display = 'none';
   }
+
+  // Nút buttons
+  const btnDraft = document.getElementById('btn_draft');
+  const btnFinalize = document.getElementById('btn_finalize');
+  if (isFullyLocked) {
+    btnDraft.disabled = true;
+    btnFinalize.disabled = true;
+  } else if (isChotDon && !isAdmin) {
+    // Sale không sửa được đơn đã chốt
+    btnDraft.disabled = true;
+    btnFinalize.disabled = true;
+  }
+  // Admin với đơn Chốt đơn: buttons vẫn hoạt động bình thường (sửa được)
 }
 
 // Fetch master prices từ Lark Base → override MASTER_PRICE (data.js là fallback)
@@ -1115,6 +1159,25 @@ async function saveOrder(status) {
     } else alert('Lỗi: ' + JSON.stringify(r));
   }
 }
+
+// Admin đổi trạng thái đơn
+document.getElementById('admin_status_sel').addEventListener('change', async e => {
+  const newStatus = e.target.value;
+  if (!state.record_id) { alert('Chưa có đơn để đổi trạng thái'); return; }
+  if (!confirm(`Đổi trạng thái đơn ${state.ma_don} → ${newStatus}?`)) {
+    e.target.value = state.status;
+    return;
+  }
+  const r = await apiUpdateOrder(state.record_id, { fields: { 'Trạng thái': newStatus } });
+  if (r.code === 0) {
+    state.status = newStatus;
+    applyOrderLock();
+    alert(`✅ Đã đổi trạng thái → ${newStatus}`);
+  } else {
+    alert('Lỗi: ' + JSON.stringify(r).slice(0,200));
+    e.target.value = state.status;
+  }
+});
 
 document.getElementById('btn_draft').addEventListener('click', () => saveOrder('Nháp'));
 document.getElementById('btn_finalize').addEventListener('click', async () => {
