@@ -1033,10 +1033,17 @@ function renderGiftPanel() {
   }
 }
 
-// updatePnL: chỉ update số PnL panel, KHÔNG rebuild bảng (giữ focus input)
+// updatePnL: update số PnL panel + re-render gift panel nếu tier/CT đổi
+let _last_tier_key = null;
 function updatePnL() {
   if (!state.ct_id || !state.nhom) return;
   const p = calcPnL(state);
+  // Check tier thay đổi → re-render gift panel
+  const tierKey = `${state.ct_id}::${p.tier ? p.tier.ten : 'none'}`;
+  if (tierKey !== _last_tier_key) {
+    _last_tier_key = tierKey;
+    renderGiftPanel();
+  }
   document.getElementById('pnl_ny').textContent = fmtMoney(p.dt_ny);
   document.getElementById('pnl_ck').textContent = fmtMoney(-p.ck_kh_amount);
   document.getElementById('pnl_thuc').textContent = fmtMoney(p.dt_thuc);

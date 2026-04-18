@@ -61,16 +61,35 @@ body.auth-ok { visibility: visible; }
 
 <section class="section">
   <div class="container">
-    <div class="filters">
+    <div class="filters" style="flex-wrap:wrap; gap:8px; margin-bottom:12px;">
       <button class="filter-chip active" data-status="all">Tất cả</button>
       <button class="filter-chip" data-status="Nháp">Nháp</button>
       <button class="filter-chip" data-status="Báo giá">Báo giá</button>
       <button class="filter-chip" data-status="Chốt đơn">Chốt đơn</button>
       <button class="filter-chip" data-status="Đã giao">Đã giao</button>
       <button class="filter-chip" data-status="Đã TT">Đã TT</button>
+      <button class="filter-chip" data-status="Huỷ">Huỷ</button>
       <div style="margin-left:auto;">
         <a href="sale.html" class="btn btn-primary btn-sm">+ Tạo đơn mới</a>
       </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
+      <input type="text" id="f_kh" class="form-input" placeholder="🔍 Tìm KH / SĐT / Mã đơn..." style="max-width:280px;">
+      <select id="f_sale" class="form-select" style="max-width:200px;">
+        <option value="">— Sale (tất cả) —</option>
+      </select>
+      <select id="f_ct" class="form-select" style="max-width:140px;">
+        <option value="">— CT —</option>
+        <option>CT1</option><option>CT2</option><option>CT3</option>
+        <option>CT4</option><option>CT5</option><option>CT6</option>
+      </select>
+      <select id="f_nhom" class="form-select" style="max-width:140px;">
+        <option value="">— Nhóm KH —</option>
+        <option>N1</option><option>N2</option><option>N3</option>
+        <option>N4</option><option>N5</option><option>NQ</option>
+      </select>
+      <span id="count_info" style="color:var(--text-muted); font-size:13px; margin-left:auto;"></span>
     </div>
 
     <div id="order_list" class="table-wrap">
@@ -105,6 +124,7 @@ body.auth-ok { visibility: visible; }
 <script src="assets/api.js"></script>
 <script>
 let ALL_ORDERS = [];
+let CURRENT_ME = null;
 let currentFilter = 'all';
 
 async function init() {
@@ -122,6 +142,7 @@ async function init() {
   document.body.classList.add('auth-ok');
   document.getElementById('user_box').style.display = '';
   document.getElementById('user_name').textContent = me.name + ' (' + me.role + ')';
+  CURRENT_ME = me;
   if (me.role === 'admin') document.getElementById('nav_admin').style.display = '';
 
   document.getElementById('btn_logout').addEventListener('click', e => {
@@ -129,6 +150,16 @@ async function init() {
   });
 
   ALL_ORDERS = await apiListOrders();
+
+  // Populate Sale filter options (unique sellers từ danh sách đơn)
+  const sellers = [...new Set(ALL_ORDERS.map(o => getField(o.fields, 'Sale')).filter(Boolean))];
+  const saleSel = document.getElementById('f_sale');
+  sellers.sort().forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    saleSel.appendChild(opt);
+  });
+
   render();
 }
 
@@ -144,11 +175,24 @@ function getField(f, key) {
 }
 
 function render() {
+  const q = (document.getElementById('f_kh').value || '').toLowerCase().trim();
+  const fSale = document.getElementById('f_sale').value;
+  const fCt = document.getElementById('f_ct').value;
+  const fNhom = document.getElementById('f_nhom').value;
+
   const list = ALL_ORDERS.filter(o => {
-    if (currentFilter === 'all') return true;
-    const st = getField(o.fields, 'Trạng thái');
-    return st === currentFilter;
+    const f = o.fields;
+    if (currentFilter !== 'all' && getField(f, 'Trạng thái') !== currentFilter) return false;
+    if (fSale && getField(f, 'Sale') !== fSale) return false;
+    if (fCt && getField(f, 'Chương trình') !== fCt) return false;
+    if (fNhom && getField(f, 'Nhóm KH') !== fNhom) return false;
+    if (q) {
+      const hay = ((getField(f,'KH')||'') + (getField(f,'SĐT')||'') + (getField(f,'Mã đơn')||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
   });
+  document.getElementById('count_info').textContent = `${list.length} / ${ALL_ORDERS.length} đơn`;
   const listEl = document.getElementById('order_list');
   if (!list.length) {
     listEl.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted);">Chưa có đơn nào.<br><a href="sale.html" style="color:var(--primary);">Tạo đơn đầu tiên →</a></div>';
@@ -193,17 +237,23 @@ function renderRow(o) {
   const ngay = getField(f, 'Ngày đặt');
   const dateStr = ngay ? new Date(ngay).toLocaleDateString('vi-VN') : '—';
   const maDon = getField(f, 'Mã đơn');
+  // Nút xóa: chỉ admin + đơn chưa Chốt đơn/Đã giao/Đã TT
+  const isAdmin = CURRENT_ME && CURRENT_ME.role === 'admin';
+  const canDelete = isAdmin && !['Chốt đơn','Đã giao','Đã TT'].includes(st);
+  const delBtn = canDelete
+    ? `<button class="btn btn-sm" style="background:#FEE2E2; color:#991B1B; border:none; margin-left:4px;" data-del="${o.record_id}" data-ma="${maDon}">Xoá</button>`
+    : '';
   return `<tr>
     <td><code style="background:var(--bg-soft); padding:2px 8px; border-radius:4px; font-size:12px;">${maDon}</code></td>
     <td style="font-size:13px;">${dateStr}</td>
-    <td>${getField(f, 'KH') || '—'}</td>
+    <td>${getField(f, 'KH') || '—'}<div style="font-size:11px; color:var(--text-muted);">${getField(f, 'Sale') || ''}</div></td>
     <td class="center"><span class="badge badge-primary">${getField(f, 'Nhóm KH') || '—'}</span></td>
     <td class="center"><b>${getField(f, 'Chương trình') || '—'}</b></td>
     <td class="center text-muted">${getField(f, 'Bậc') || '—'}</td>
     <td class="num font-mono">${fmtMoney(getField(f, 'DT thực thu') || 0)}</td>
     <td class="num font-mono">${fmtPct(getField(f, '% LN/NY') || 0)}</td>
     <td class="center"><span class="badge badge-${badgeCls}">${st}</span></td>
-    <td><a href="sale.html?id=${o.record_id}" class="btn btn-outline btn-sm">Mở</a></td>
+    <td style="white-space:nowrap;"><a href="sale.html?id=${o.record_id}" class="btn btn-outline btn-sm">Mở</a>${delBtn}</td>
   </tr>`;
 }
 
@@ -214,6 +264,30 @@ document.querySelectorAll('.filter-chip').forEach(c => {
     currentFilter = c.dataset.status;
     render();
   });
+});
+
+['f_kh','f_sale','f_ct','f_nhom'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+
+// Delete order (admin only, trước Chốt đơn)
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-del]');
+  if (!btn) return;
+  const id = btn.dataset.del;
+  const ma = btn.dataset.ma;
+  if (!confirm(`Xoá đơn ${ma}? Hành động không thể hoàn tác.`)) return;
+  btn.disabled = true; btn.textContent = '...';
+  const r = await apiFetch(`/api/orders/${id}`, { method: 'DELETE' });
+  if (r.code === 0 || r.ok) {
+    ALL_ORDERS = ALL_ORDERS.filter(o => o.record_id !== id);
+    render();
+  } else {
+    alert('Lỗi xoá: ' + JSON.stringify(r).slice(0,200));
+    btn.disabled = false; btn.textContent = 'Xoá';
+  }
 });
 
 init();

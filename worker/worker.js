@@ -364,6 +364,35 @@ async function listOrders(env, email, role) {
   return items;
 }
 
+async function deleteOrder(env, orderId) {
+  // 1. Lấy Mã đơn để xóa lines
+  const orderRec = await larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_ORDERS}/records/${orderId}`);
+  const maDonField = orderRec?.data?.record?.fields?.['Mã đơn'];
+  const maDon = typeof maDonField === 'string' ? maDonField
+    : (Array.isArray(maDonField) && maDonField[0]?.text) ? maDonField[0].text : '';
+
+  // 2. Xóa tất cả lines của đơn
+  if (maDon) {
+    const search = await larkFetch(env,
+      `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/search?page_size=100`,
+      { method: 'POST', body: JSON.stringify({ filter: { conjunction: 'and', conditions: [
+        { field_name: 'Mã đơn', operator: 'is', value: [maDon] }
+      ]}})});
+    const lineIds = (search?.data?.items || []).map(it => it.record_id);
+    if (lineIds.length) {
+      await larkFetch(env,
+        `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/batch_delete`,
+        { method: 'POST', body: JSON.stringify({ records: lineIds }) });
+    }
+  }
+
+  // 3. Xóa order
+  return larkFetch(env,
+    `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_ORDERS}/records/${orderId}`,
+    { method: 'DELETE' });
+}
+
 async function getOrderLines(env, maDon) {
   const r = await larkFetch(env,
     `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/search?page_size=100`,
@@ -630,6 +659,12 @@ export default {
       if (mOrder && req.method === 'PATCH') {
         const body = await req.json();
         const r = await updateOrder(env, mOrder[1], body);
+        return json(r, r.code === 0 ? 200 : 500, cors);
+      }
+      // DELETE /api/orders/:id — admin only
+      if (mOrder && req.method === 'DELETE') {
+        const denied = requireAdmin(); if (denied) return denied;
+        const r = await deleteOrder(env, mOrder[1]);
         return json(r, r.code === 0 ? 200 : 500, cors);
       }
 
