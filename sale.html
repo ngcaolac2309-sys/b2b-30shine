@@ -971,13 +971,12 @@ function renderGiftPanel() {
   if (['CT2','CT3','CT5'].includes(state.ct_id)) laborie_all.forEach(s => gift_skus.add(s));
   if (['CT6'].includes(state.ct_id)) drfs_all.forEach(s => gift_skus.add(s));
 
-  // Gift warning bar
+  // Gift warning bar — luôn hiện (kể cả khi chưa chọn quà)
   const giftCheck = checkGiftLimit(state, p);
+  const conLai = (giftCheck.pct_max - giftCheck.pct_total).toFixed(1);
   const warnHtml = giftCheck.over
     ? `<div class="gift-warn-bar over">⚠️ VƯỢT NGƯỠNG: Tổng CK+quà = <b>${giftCheck.pct_total}%</b> (max cho ${state.nhom}: <b>${giftCheck.pct_max}%</b>). Giảm số lượng quà hoặc liên hệ quản lý.</div>`
-    : (state.qua_user.length
-      ? `<div class="gift-warn-bar ok">✅ Tổng CK+quà: <b>${giftCheck.pct_total}%</b> / ${giftCheck.pct_max}% (còn ${(giftCheck.pct_max - giftCheck.pct_total).toFixed(1)}% dư)</div>`
-      : '');
+    : `<div class="gift-warn-bar ok">✅ Tổng CK+quà: <b>${giftCheck.pct_total}%</b> / ${giftCheck.pct_max}% (còn <b>${conLai}%</b> dư cho quà tặng)</div>`;
 
   const fillBtn = suggested.length
     ? `<button type="button" class="btn btn-outline btn-sm" id="btn_fill_gift" style="margin-top:8px;">📋 Áp quà đề xuất tự động</button>`
@@ -1065,16 +1064,14 @@ function updatePnL() {
   const hasOrder = p.dt_ny > 0;
   document.getElementById('btn_preview').disabled = !hasOrder;
   document.getElementById('btn_finalize').disabled = !hasOrder;
-  // Update gift warning bar nếu có
+  // Update gift warning bar — luôn update dù chưa chọn quà
   const warnEl = document.querySelector('.gift-warn-bar');
   if (warnEl) {
     const gc = checkGiftLimit(state, p);
-    if (state.qua_user.length) {
-      warnEl.className = `gift-warn-bar ${gc.over ? 'over' : 'ok'}`;
-      warnEl.innerHTML = gc.over
-        ? `⚠️ VƯỢT NGƯỠNG: Tổng CK+quà = <b>${gc.pct_total}%</b> (max ${state.nhom}: <b>${gc.pct_max}%</b>). Giảm SL quà.`
-        : `✅ Tổng CK+quà: <b>${gc.pct_total}%</b> / ${gc.pct_max}% (còn ${(gc.pct_max - gc.pct_total).toFixed(1)}% dư)`;
-    }
+    warnEl.className = `gift-warn-bar ${gc.over ? 'over' : 'ok'}`;
+    warnEl.innerHTML = gc.over
+      ? `⚠️ VƯỢT NGƯỠNG: Tổng CK+quà = <b>${gc.pct_total}%</b> (max ${state.nhom}: <b>${gc.pct_max}%</b>). Giảm SL quà.`
+      : `✅ Tổng CK+quà: <b>${gc.pct_total}%</b> / ${gc.pct_max}% (còn <b>${(gc.pct_max - gc.pct_total).toFixed(1)}%</b> dư cho quà tặng)`;
   }
 }
 
