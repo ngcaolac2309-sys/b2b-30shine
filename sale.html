@@ -1080,19 +1080,25 @@ async function saveOrder(status) {
   }
   const payload = buildOrderPayload(status);
   if (state.record_id) {
-    // Update existing — chỉ update status + một số field chính
-    const patch = {
-      'KH': state.kh_ten, 'SĐT': state.kh_sdt, 'Nhóm KH': state.nhom,
-      'Chương trình': state.ct_id, 'Bậc': payload.tier,
-      'DT NY': payload.dt_ny, 'DT thực thu': payload.dt_thuc,
-      'COGS': payload.cogs, 'GV quà': payload.gv_qua,
-      'LN thuần': payload.ln_thuan, '% LN/NY': payload.pct_ln_ny,
-      'Trạng thái': status,
-      'Địa chỉ giao': state.ship_addr || '',
-      'SĐT nhận hàng': state.ship_phone || '',
-      'Người nhận hàng': state.ship_receiver || '',
+    // Update existing — gửi cả fields + lines + qua_user để worker xóa lines cũ + insert mới
+    const body = {
+      fields: {
+        'KH': state.kh_ten, 'SĐT': state.kh_sdt, 'Nhóm KH': state.nhom,
+        'Chương trình': state.ct_id, 'Bậc': payload.tier,
+        'DT NY': payload.dt_ny, 'DT thực thu': payload.dt_thuc,
+        'COGS': payload.cogs, 'GV quà': payload.gv_qua,
+        'LN thuần': payload.ln_thuan, '% LN/NY': payload.pct_ln_ny,
+        'Trạng thái': status,
+        'Địa chỉ giao': state.ship_addr || '',
+        'SĐT nhận hàng': state.ship_phone || '',
+        'Người nhận hàng': state.ship_receiver || '',
+      },
+      maDon: state.ma_don,
+      lines: payload.lines,
+      qua_user: payload.qua_user,
+      ck_kh: payload.ck_kh,
     };
-    const r = await apiUpdateOrder(state.record_id, patch);
+    const r = await apiUpdateOrder(state.record_id, body);
     if (r.code === 0) {
       state.status = status;
       document.getElementById('order_status').innerHTML = `Đơn: <b>${state.ma_don}</b> · <span class="badge badge-${status==='Chốt đơn'?'success':(status==='Báo giá'?'warn':'primary')}">${status}</span>`;

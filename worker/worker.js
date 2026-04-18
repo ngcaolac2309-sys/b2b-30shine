@@ -301,10 +301,52 @@ async function createOrder(env, session, body) {
   return { maDon, orderId };
 }
 
-async function updateOrder(env, orderId, patch) {
+async function updateOrder(env, orderId, body) {
+  // body có thể là patch trực tiếp, hoặc {fields, lines, qua_user, maDon} để replace lines
+  const fields = body.fields || body;
   const r = await larkFetch(env,
     `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_ORDERS}/records/${orderId}`,
-    { method: 'PUT', body: JSON.stringify({ fields: patch }) });
+    { method: 'PUT', body: JSON.stringify({ fields }) });
+  if (r.code !== 0) return r;
+
+  // Nếu có lines → xóa lines cũ + insert mới
+  const maDon = body.maDon;
+  const hasLinesUpdate = body.lines !== undefined || body.qua_user !== undefined;
+  if (hasLinesUpdate && maDon) {
+    // 1. Tìm tất cả line cũ của đơn này
+    const search = await larkFetch(env,
+      `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/search?page_size=100`,
+      { method: 'POST', body: JSON.stringify({ filter: { conjunction: 'and', conditions: [
+        { field_name: 'Mã đơn', operator: 'is', value: [maDon] }
+      ]}})});
+    const oldIds = (search?.data?.items || []).map(it => it.record_id);
+
+    // 2. Xóa batch
+    if (oldIds.length) {
+      await larkFetch(env,
+        `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/batch_delete`,
+        { method: 'POST', body: JSON.stringify({ records: oldIds }) });
+    }
+
+    // 3. Insert lines mới
+    const allLines = [];
+    (body.lines || []).forEach(l => allLines.push({ fields: {
+      'Mã đơn': maDon, 'Mã SKU': l.sku, 'Tên SP': l.ten || '',
+      'Loại': 'Bán', 'SL': l.sl, 'Giá NY': l.gia_ny || 0,
+      'CK': body.ck_kh || 0, 'Giá sau CK': l.gia_sau_ck || 0,
+      'Thành tiền': l.thanh_tien || 0, 'Giá vốn': l.gv_line || 0,
+    }}));
+    (body.qua_user || []).forEach(q => allLines.push({ fields: {
+      'Mã đơn': maDon, 'Mã SKU': q.sku, 'Tên SP': q.ten || '',
+      'Loại': 'Quà', 'SL': q.sl, 'Giá NY': q.gia_ny || 0,
+      'Giá vốn': (q.gv || 0) * q.sl,
+    }}));
+    if (allLines.length) {
+      await larkFetch(env,
+        `/bitable/v1/apps/${env.BASE_TOKEN}/tables/${env.TBL_LINES}/records/batch_create`,
+        { method: 'POST', body: JSON.stringify({ records: allLines }) });
+    }
+  }
   return r;
 }
 
