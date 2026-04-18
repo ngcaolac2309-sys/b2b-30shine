@@ -288,6 +288,7 @@ body.auth-ok { visibility: visible; }
         </span>
         <button class="btn btn-outline" id="btn_draft" disabled>💾 Lưu nháp</button>
         <button class="btn btn-primary" id="btn_preview" disabled>📄 Xuất báo giá PDF</button>
+        <button class="btn btn-outline" id="btn_snap" disabled style="background:#D4A017; color:#fff; border-color:#D4A017;">📸 Xuất ảnh Zalo</button>
         <button class="btn btn-success" id="btn_finalize" disabled>✅ Chốt đơn</button>
       </div>
     </div>
@@ -1063,6 +1064,7 @@ function updatePnL() {
   st.className = `pnl-status ${s.cls}`;
   const hasOrder = p.dt_ny > 0;
   document.getElementById('btn_preview').disabled = !hasOrder;
+  document.getElementById('btn_snap').disabled = !hasOrder;
   document.getElementById('btn_finalize').disabled = !hasOrder;
   // Update gift warning bar — luôn update dù chưa chọn quà
   const warnEl = document.querySelector('.gift-warn-bar');
@@ -1094,6 +1096,207 @@ document.getElementById('btn_preview').addEventListener('click', () => {
   const p = calcPnL(state);
   openQuotePreview(state, p);
 });
+
+// ══════════ EXPORT ẢNH CHO ZALO / CHAT ══════════
+document.getElementById('btn_snap').addEventListener('click', async () => {
+  const p = calcPnL(state);
+  if (!p.dt_ny) return alert('Chưa có đơn để xuất');
+  await exportOrderImage(state, p);
+});
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (window.html2canvas) return resolve();
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function exportOrderImage(s, p) {
+  // Build card DOM off-screen
+  const card = document.createElement('div');
+  card.id = 'snap_card';
+  card.style.cssText = `
+    position: fixed; top: -9999px; left: 0;
+    width: 820px; background: #fff; font-family: 'Manrope', sans-serif;
+    color: #0A1F4D; padding: 0; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+  `;
+
+  const now = new Date().toLocaleDateString('vi-VN');
+  const badgeColor = p.pct_ln_ny >= 0.15 ? '#16A34A' : (p.pct_ln_ny >= 0.10 ? '#D97706' : '#DC2626');
+  const badgeLabel = p.pct_ln_ny >= 0.15 ? '✓ ĐẠT' : (p.pct_ln_ny >= 0.10 ? '⚠ CHẤP NHẬN' : '✗ THẤP');
+
+  const linesHtml = p.lines.map((l, i) => `
+    <tr style="border-bottom: 1px solid #F1F4F9;">
+      <td style="padding: 8px 10px; color:#8B93A7; font-size:12px;">${i+1}</td>
+      <td style="padding: 8px 10px;"><code style="background:#F1F6FF; padding:2px 6px; border-radius:4px; font-size:11px; color:#15397F;">${l.sku}</code></td>
+      <td style="padding: 8px 10px; font-size:13px;">${l.ten}</td>
+      <td style="padding: 8px 10px; text-align:right; font-size:13px; color:#4A5573;">${fmtNum(l.gia_ny)}</td>
+      <td style="padding: 8px 10px; text-align:center; font-weight:700; color:#15397F;">${l.sl}</td>
+      <td style="padding: 8px 10px; text-align:right; font-weight:700; color:#15397F;">${fmtNum(l.thanh_tien)}</td>
+    </tr>`).join('');
+
+  const giftLines = (s.qua_user || []).filter(q => q.sl > 0);
+  let giftHtml = '';
+  let giftTotalNy = 0;
+  if (giftLines.length) {
+    const giftRows = giftLines.map((q, i) => {
+      const sku = skuById(q.sku);
+      if (!sku) return '';
+      const lineNy = sku.ny * q.sl;
+      giftTotalNy += lineNy;
+      return `<tr style="border-bottom: 1px solid #FEF3C7;">
+        <td style="padding: 6px 10px; color:#92400E; font-size:12px;">${i+1}</td>
+        <td style="padding: 6px 10px; font-size:12px;">${sku.ten}</td>
+        <td style="padding: 6px 10px; text-align:center; font-weight:700; color:#92400E;">${q.sl}</td>
+        <td style="padding: 6px 10px; text-align:right; font-size:12px; color:#92400E;">${fmtNum(lineNy)}</td>
+      </tr>`;
+    }).join('');
+    giftHtml = `
+      <div style="background:#FFFBEB; border-top: 2px solid #F59E0B; padding: 16px 28px;">
+        <div style="font-weight:800; color:#92400E; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+          🎁 Quà tặng đi kèm (${p.tier ? p.tier.ten : ''})
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead><tr style="background:#FEF3C7;">
+            <th style="padding:6px 10px; text-align:left; color:#92400E; font-size:11px;">#</th>
+            <th style="padding:6px 10px; text-align:left; color:#92400E; font-size:11px;">Tên SP</th>
+            <th style="padding:6px 10px; text-align:center; color:#92400E; font-size:11px;">SL</th>
+            <th style="padding:6px 10px; text-align:right; color:#92400E; font-size:11px;">Trị giá NY</th>
+          </tr></thead>
+          <tbody>${giftRows}</tbody>
+          <tfoot><tr style="border-top:2px solid #F59E0B;">
+            <td colspan="3" style="padding:8px 10px; text-align:right; font-weight:700; color:#92400E;">Tổng giá trị quà (NY):</td>
+            <td style="padding:8px 10px; text-align:right; font-weight:900; color:#B8860B; font-size:15px;">${fmtMoney(giftTotalNy)}</td>
+          </tr></tfoot>
+        </table>
+      </div>`;
+  }
+
+  card.innerHTML = `
+    <div style="background: linear-gradient(135deg, #15397F 0%, #0A1F4D 100%); color:#fff; padding:24px 28px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="font-size:11px; letter-spacing:1.5px; color:#A0C9EC; text-transform:uppercase; font-weight:700;">BÁO CÁO ĐƠN HÀNG B2B</div>
+          <div style="font-size:22px; font-weight:900; margin-top:4px;">${s.kh_ten || 'Khách hàng'}</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.8); margin-top:2px;">
+            ${s.kh_sdt ? 'SĐT: '+s.kh_sdt+' · ' : ''}Nhóm ${s.nhom || '—'} · ${p.ct_name || ''}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="background:#D4A017; color:#fff; padding:4px 12px; border-radius:100px; font-size:11px; font-weight:800; display:inline-block;">
+            ${state.ma_don || 'NHÁP'}
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:8px;">${now}</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.6);">Sale: ${s.sale_name || '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; background:#F8FAFC; border-bottom:1px solid #E4E7EE;">
+      <div style="padding:16px 20px; border-right:1px solid #E4E7EE;">
+        <div style="font-size:10px; color:#8B93A7; text-transform:uppercase; letter-spacing:1px; font-weight:700;">SL & Doanh thu NY</div>
+        <div style="font-size:20px; font-weight:900; color:#0A1F4D; margin-top:4px;">${p.qty} SP</div>
+        <div style="font-size:13px; color:#4A5573;">${fmtMoney(p.dt_ny)}</div>
+      </div>
+      <div style="padding:16px 20px; border-right:1px solid #E4E7EE;">
+        <div style="font-size:10px; color:#8B93A7; text-transform:uppercase; letter-spacing:1px; font-weight:700;">Chiết khấu KH</div>
+        <div style="font-size:20px; font-weight:900; color:#DC2626; margin-top:4px;">${fmtPct(p.ck_kh)}</div>
+        <div style="font-size:13px; color:#4A5573;">− ${fmtMoney(p.ck_kh_amount)}</div>
+      </div>
+      <div style="padding:16px 20px; background:#FFF9E6;">
+        <div style="font-size:10px; color:#92400E; text-transform:uppercase; letter-spacing:1px; font-weight:700;">KH thanh toán</div>
+        <div style="font-size:22px; font-weight:900; color:#B8860B; margin-top:4px;">${fmtMoney(p.dt_thuc)}</div>
+        <div style="font-size:11px; color:#92400E;">đã bao gồm VAT 8%</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 28px;">
+      <div style="font-weight:800; color:#15397F; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
+        📦 Chi tiết đơn hàng
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead><tr style="background:#15397F; color:#fff;">
+          <th style="padding:8px 10px; text-align:left; font-size:11px;">#</th>
+          <th style="padding:8px 10px; text-align:left; font-size:11px;">SKU</th>
+          <th style="padding:8px 10px; text-align:left; font-size:11px;">Tên sản phẩm</th>
+          <th style="padding:8px 10px; text-align:right; font-size:11px;">Giá NY</th>
+          <th style="padding:8px 10px; text-align:center; font-size:11px;">SL</th>
+          <th style="padding:8px 10px; text-align:right; font-size:11px;">Thành tiền</th>
+        </tr></thead>
+        <tbody>${linesHtml}</tbody>
+      </table>
+    </div>
+
+    ${giftHtml}
+
+    <div style="background:#F8FAFC; padding:20px 28px; border-top: 1px solid #E4E7EE;">
+      <div style="font-weight:800; color:#15397F; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
+        📊 Tóm tắt PnL (ước tính)
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:#fff; padding:14px; border-radius:8px; border:1px solid #E4E7EE;">
+          <div style="font-size:11px; color:#8B93A7; text-transform:uppercase;">DT chưa VAT</div>
+          <div style="font-size:17px; font-weight:800; color:#0A1F4D; margin-top:2px;">${fmtMoney(p.dt_thuc_ex)}</div>
+        </div>
+        <div style="background:#fff; padding:14px; border-radius:8px; border:1px solid #E4E7EE;">
+          <div style="font-size:11px; color:#8B93A7; text-transform:uppercase;">Giá vốn (COGS)</div>
+          <div style="font-size:17px; font-weight:800; color:#DC2626; margin-top:2px;">− ${fmtMoney(p.cogs)}</div>
+        </div>
+        <div style="background:#fff; padding:14px; border-radius:8px; border:1px solid #E4E7EE;">
+          <div style="font-size:11px; color:#8B93A7; text-transform:uppercase;">CK NV + Vận hành</div>
+          <div style="font-size:17px; font-weight:800; color:#DC2626; margin-top:2px;">− ${fmtMoney(p.ck_nv + p.van_hanh)}</div>
+        </div>
+        <div style="background:#fff; padding:14px; border-radius:8px; border:1px solid #E4E7EE;">
+          <div style="font-size:11px; color:#8B93A7; text-transform:uppercase;">GV quà tặng</div>
+          <div style="font-size:17px; font-weight:800; color:#DC2626; margin-top:2px;">− ${fmtMoney(p.gv_qua)}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px; background:linear-gradient(135deg, #15397F 0%, #225CCC 100%); color:#fff; padding:16px 20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:1px;">LỢI NHUẬN THUẦN</div>
+          <div style="font-size:28px; font-weight:900;">${fmtMoney(p.ln_thuan)}</div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.85); margin-top:2px;">Biên LN / NY: <b>${fmtPct(p.pct_ln_ny)}</b></div>
+        </div>
+        <div style="background:${badgeColor}; padding:8px 14px; border-radius:100px; font-size:12px; font-weight:800;">${badgeLabel}</div>
+      </div>
+    </div>
+
+    ${s.ship_addr ? `
+    <div style="background:#EFF6FF; padding:14px 28px; border-top:1px solid #DBEAFE;">
+      <div style="font-size:11px; color:#15397F; text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-bottom:4px;">🚚 Thông tin giao hàng</div>
+      <div style="font-size:13px; color:#0A1F4D;">${s.ship_addr}</div>
+      <div style="font-size:12px; color:#4A5573; margin-top:2px;">
+        Nhận: <b>${s.ship_receiver || s.kh_ten || '—'}</b> · SĐT: <b>${s.ship_phone || s.kh_sdt || '—'}</b>
+      </div>
+    </div>` : ''}
+
+    <div style="background:#0A1F4D; color:rgba(255,255,255,0.7); padding:10px 28px; font-size:11px; text-align:center;">
+      30SHINE B2B · Tháng 4.2026 · Ảnh tự động sinh, vui lòng KHÔNG dùng thay báo giá chính thức cho khách
+    </div>
+  `;
+  document.body.appendChild(card);
+
+  // Load html2canvas if not available
+  await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+
+  try {
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    card.remove();
+    const link = document.createElement('a');
+    const fname = `DonB2B_${(s.kh_ten || 'KH').replace(/\s+/g,'_').slice(0,30)}_${Date.now()}.png`;
+    link.download = fname;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (e) {
+    card.remove();
+    alert('Lỗi xuất ảnh: ' + e.message);
+  }
+}
 
 function buildOrderPayload(status) {
   const p = calcPnL(state);
